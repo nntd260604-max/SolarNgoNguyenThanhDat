@@ -1,0 +1,238 @@
+/* ==========================================================================
+   HOÀNG GIANG SOLAR - BẢNG ĐIỀU KHIỂN QUẢN TRỊ (ADMIN DASHBOARD)
+   Phát triển bởi: Ngô Nguyễn Thành Đạt - D22KTPM03
+   ========================================================================== */
+
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #F8FAFC;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #0A2B4C 0%, #0F3E6D 100%);
+  color: #FFFFFF;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  z-index: 1020;
+}
+
+.admin-sidebar-header {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-sidebar-header img {
+  height: 40px;
+  background: #FFFFFF;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.admin-menu {
+  list-style: none;
+  padding: 1rem 0.75rem;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.admin-menu-item {
+  margin-bottom: 0.35rem;
+}
+
+.admin-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #CBD5E1;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.admin-menu-link:hover, .admin-menu-link.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.admin-menu-link.active {
+  background: linear-gradient(90deg, rgba(232, 137, 12, 0.8) 0%, rgba(232, 137, 12, 0.4) 100%);
+  border-left: 4px solid #F59E0B;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Main Content Area */
+.admin-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.admin-topbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--hgs-border);
+  padding: 0.85rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.admin-content {
+  padding: 1.75rem;
+  flex-grow: 1;
+}
+
+/* Metric / KPI Cards */
+.kpi-card {
+  background: #FFFFFF;
+  border: 1px solid var(--hgs-border);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(15, 62, 109, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 62, 109, 0.08);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+}
+
+.kpi-card.kpi-total::before { background-color: var(--hgs-primary); }
+.kpi-card.kpi-pending::before { background-color: var(--hgs-warning); }
+.kpi-card.kpi-processing::before { background-color: var(--hgs-accent); }
+.kpi-card.kpi-resolved::before { background-color: var(--hgs-success); }
+
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.kpi-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+.kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--hgs-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-subtext {
+  font-size: 0.8rem;
+  color: #64748B;
+  margin: 0;
+}
+
+/* Filter Bar */
+.filter-bar {
+  background: #FFFFFF;
+  border: 1px solid var(--hgs-border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Data Tables */
+.table-custom {
+  background: #FFFFFF;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15, 62, 109, 0.04);
+}
+
+.table-custom thead th {
+  background-color: #F8FAFC;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--hgs-border);
+  padding: 0.9rem 1rem;
+}
+
+.table-custom tbody td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--hgs-border);
+  font-size: 0.925rem;
+}
+
+.table-custom tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+/* Canned Responses dropdown styling */
+.canned-dropdown-menu {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Print Ticket Modal */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printTicketSection, #printTicketSection * {
+    visibility: visible;
+  }
+  #printTicketSection {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+  }
+}
+

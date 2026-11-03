@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập / Đăng Ký - Hoàng Giang Solar</title>
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom Style -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .auth-page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0A2B4C 0%, #0F3E6D 50%, #174C80 100%);
+      padding: 2rem 1rem;
+    }
+    .auth-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      max-width: 960px;
+      width: 100%;
+    }
+    .auth-side-panel {
+      background: linear-gradient(180deg, #0F3E6D 0%, #0A2B4C 100%);
+      color: #FFFFFF;
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .auth-side-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(232, 137, 12, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .auth-form-panel {
+      padding: 3rem 2.5rem;
+    }
+    .nav-tabs .nav-link {
+      border: none;
+      color: #64748B;
+      font-weight: 600;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--hgs-primary);
+      border-bottom-color: var(--hgs-secondary);
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="auth-page-wrapper">
+
+  <div class="auth-card">
+    <div class="row g-0">
+      <!-- Left Side: Brand & Context -->
+      <div class="col-lg-5 auth-side-panel d-none d-lg-flex">
+        <div>
+          <a href="home.html" class="text-decoration-none d-flex align-items-center gap-2 mb-4">
+            <img src="assets/images/logo.png" alt="Logo" style="height: 48px; background: #fff; padding: 4px; border-radius: 8px;">
+            <div class="text-white">
+              <div class="fw-bold fs-5 leading-none">HOÀNG GIANG SOLAR</div>
+              <div class="small text-warning" style="font-size: 0.75rem;">Năng Lượng Xanh Bền Vững</div>
+            </div>
+          </a>
+
+          <h3 class="fw-bold mb-3 text-warning">Hệ Thống Quản Lý Tiếp Nhận Yêu Cầu</h3>
+          <p class="text-white-50 small mb-4">
+            Cổng tiếp nhận phản ánh, yêu cầu tư vấn báo giá, đăng ký bảo dưỡng pin mặt trời và xử lý sự cố thiết bị an ninh tại Hoàng Giang Solar.
+          </p>
+
+          <div class="p-3 bg-white bg-opacity-10 rounded-3 mb-4 small border border-white-50">
+            <div class="fw-bold text-warning mb-1"><i class="fa-solid fa-graduation-cap me-1"></i> Báo Cáo Thực Tập Tốt Nghiệp:</div>
+            <div>• Sinh viên: <strong>Ngô Nguyễn Thành Đạt</strong></div>
+            <div>• MSSV: <strong>2224801030332</strong> - Lớp: <strong>D22KTPM03</strong></div>
+            <div>• Giảng viên: <strong>Lê Minh Tiến</strong></div>
+            <div>• Cán bộ hướng dẫn: <strong>Võ Hoàng Nhật</strong></div>
+          </div>
+        </div>
+
+        <div class="text-white-50 small">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="fa-solid fa-shield-halved text-success"></i>
+            <span>Bảo mật dữ liệu RBAC & JWT Token</span>
+          </div>
+          <div>© 2026 Hoàng Giang Solar. Bảo lưu mọi quyền.</div>
+        </div>
+      </div>
+
+      <!-- Right Side: Forms -->
+      <div class="col-lg-7 auth-form-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <a href="home.html" class="text-muted small text-decoration-none">
+            <i class="fa-solid fa-arrow-left me-1"></i> Quay về Trang chủ
+          </a>
+          <span class="badge bg-light text-secondary border">v2.0 Web System</span>
+        </div>
+
+        <!-- Tabs: Đăng nhập / Đăng ký -->
+        <ul class="nav nav-tabs mb-4" id="authTabs" role="tablist">
+          <li class="nav-item flex-fill text-center">
+            <button class="nav-link w-100 active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab">
+              <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng Nhập
+            </button>
+          </li>
+          <li class="nav-item flex-fill text-center">
+            <button class="nav-link w-100" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane" type="button" role="tab">
+              <i class="fa-solid fa-user-plus me-2"></i>Đăng Ký Khách Hàng
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- 1. TAB ĐĂNG NHẬP -->
+          <div class="tab-pane fade show active" id="login-pane" role="tabpanel">
+            <h4 class="fw-bold text-primary mb-1">Chào mừng trở lại!</h4>
+            <p class="text-muted small mb-4">Vui lòng nhập Email hoặc Số điện thoại để truy cập hệ thống.</p>
+
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small">Email hoặc Số điện thoại <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+                  <input type="text" id="loginIdentifier" class="form-control" placeholder="admin@hoanggiangsolar.vn hoặc 0908123456" required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                  <label class="form-label fw-semibold small">Mật khẩu <span class="text-danger">*</span></label>
+                  <a href="javascript:void(0)" onclick="Toast.info('Hỗ trợ', 'Mật khẩu tài khoản mẫu là 123456 hoặc admin123.')" class="text-decoration-none small text-secondary">Quên mật khẩu?</a>
+                </div>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-lock"></i></span>
+                  <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu..." required>
+                  <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('loginPassword', this)">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe" checked>
+                <label class="form-check-label small text-muted" for="rememberMe">Duy trì trạng thái đăng nhập</label>
+              </div>
+
+              <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold mb-3">
+                <i class="fa-solid fa-right-to-bracket me-2"></i> Đăng Nhập Vào Hệ Thống
+              </button>
+            </form>
+
+            <!-- Nút Đăng Nhập Nhanh Mẫu Cho Báo Cáo / Thuyết Trình -->
+            <div class="mt-4 pt-3 border-top">
+              <div class="small fw-bold text-muted mb-2 text-center text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                <i class="fa-solid fa-bolt text-warning me-1"></i> Đăng nhập nhanh tài khoản mẫu (Demo):
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="Auth.quickLogin('ADMIN')" title="Võ Hoàng Nhật - Admin">
+                  <i class="fa-solid fa-user-shield me-1"></i> Admin (Võ Hoàng Nhật)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="Auth.quickLogin('SUPPORT')" title="Ngô Nguyễn Thành Đạt - Support">
+                  <i class="fa-solid fa-headset me-1"></i> Support (Thành Đạt)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="Auth.quickLogin('CLIENT')" title="Nguyễn Văn An - Khách hàng">
+                  <i class="fa-solid fa-user me-1"></i> Khách hàng (Văn An)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. TAB ĐĂNG KÝ KHÁCH HÀNG -->
+          <div class="tab-pane fade" id="register-pane" role="tabpanel">
+            <h4 class="fw-bold text-primary mb-1">Tạo tài khoản mới</h4>
+            <p class="text-muted small mb-3">Đăng ký tài khoản để gửi và theo dõi tiến độ xử lý yêu cầu.</p>
+
+            <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
+              <div class="mb-2">
+                <label class="form-label fw-semibold small">Họ và tên của bạn <span class="text-danger">*</span></label>
+                <input type="text" id="regFullName" class="form-control" placeholder="Ví dụ: Lê Thị Mai" required>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Số điện thoại <span class="text-danger">*</span></label>
+                  <input type="tel" id="regPhone" class="form-control" placeholder="10 số, ví dụ: 0987111222" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Địa chỉ Email <span class="text-danger">*</span></label>
+                  <input type="email" id="regEmail" class="form-control" placeholder="ten@gmail.com" required>
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label fw-semibold small">Địa chỉ công trình / Nhà ở</label>
+                <input type="text" id="regAddress" class="form-control" placeholder="Số nhà, đường, phường/xã, tỉnh thành">
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Mật khẩu <span class="text-danger">*</span></label>
+                  <input type="password" id="regPassword" class="form-control" placeholder="Tối thiểu 6 ký tự" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold small">Nhập lại mật khẩu <span class="text-danger">*</span></label>
+                  <input type="password" id="regPasswordConfirm" class="form-control" placeholder="Xác nhận lại" required>
+                </div>
+              </div>
+
+              <div class="form-check mb-3 small">
+                <input class="form-check-input" type="checkbox" id="regAgree" required checked>
+                <label class="form-check-label text-muted" for="regAgree">
+                  Tôi đồng ý với chính sách xử lý thông tin chăm sóc khách hàng của Hoàng Giang Solar.
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold">
+                <i class="fa-solid fa-user-plus me-2"></i> Đăng Ký Tài Khoản Mới
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/toast.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if URL has tab=register
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('tab') === 'register') {
+        const regTab = document.getElementById('register-tab');
+        if (regTab) {
+          const tab = new bootstrap.Tab(regTab);
+          tab.show();
+        }
+      }
+    });
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!identifier || !password) {
+        Toast.warning('Thiếu thông tin', 'Vui lòng nhập đầy đủ thông tin đăng nhập.');
+        return;
+      }
+
+      const res = Auth.login(identifier, password);
+      if (res.success) {
+        Toast.success('Đăng nhập thành công!', `Xin chào <strong>${res.user.full_name}</strong>.`);
+        setTimeout(() => {
+          if (res.user.role === 'ADMIN' || res.user.role === 'SUPPORT') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'index.html';
+          }
+        }, 600);
+      } else {
+        Toast.error('Đăng nhập thất bại', res.message);
+      }
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('regFullName').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const address = document.getElementById('regAddress').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regPasswordConfirm').value;
+
+      // Validate SĐT
+      const phoneRegex = /^(0[3|5|7|8|9])[0-9]{8}$/;
+      if (!phoneRegex.test(phone)) {
+        Toast.warning('Số điện thoại sai', 'Vui lòng nhập số điện thoại Việt Nam hợp lệ 10 số (ví dụ: 0913704141).');
+        return;
+      }
+
+      // Validate Password
+      if (password.length < 6) {
+        Toast.warning('Mật khẩu yếu', 'Mật khẩu phải có ít nhất 6 ký tự.');
+        return;
+      }
+
+      if (password !== confirm) {
+        Toast.warning('Không trùng khớp', 'Mật khẩu và xác nhận mật khẩu không khớp nhau.');
+        return;
+      }
+
+      const res = Auth.register({
+        full_name: fullName,
+        phone: phone,
+        email: email,
+        address: address,
+        password: password
+      });
+
+      if (res.success) {
+        Toast.success('Đăng ký thành công!', `Chào mừng bạn gia nhập hệ thống hỗ trợ Hoàng Giang Solar.`);
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 800);
+      } else {
+        Toast.error('Đăng ký không thành công', res.message);
+      }
+    }
+  </script>
+</body>
+</html>
+

@@ -20,17 +20,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Phục vụ giao diện Frontend tĩnh (hỗ trợ cả môi trường Local & Serverless)
-const ROOT_DIR = process.cwd();
 const FRONTEND_DIR = path.join(__dirname, '..');
+const PUBLIC_DIR = path.join(FRONTEND_DIR, 'public');
+app.use(express.static(PUBLIC_DIR));
 app.use(express.static(FRONTEND_DIR));
-app.use(express.static(ROOT_DIR));
 
 // Helper hàm tìm và trả về file HTML
 function sendHtml(res, filename) {
-  const p1 = path.join(FRONTEND_DIR, filename);
-  const p2 = path.join(ROOT_DIR, filename);
-  if (fs.existsSync(p1)) return res.sendFile(p1);
-  if (fs.existsSync(p2)) return res.sendFile(p2);
+  const candidates = [
+    path.join(PUBLIC_DIR, filename),
+    path.join(FRONTEND_DIR, filename),
+    path.join(process.cwd(), 'public', filename),
+    path.join(process.cwd(), filename)
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return res.sendFile(p);
+  }
   res.status(404).send(`Không tìm thấy file ${filename}`);
 }
 

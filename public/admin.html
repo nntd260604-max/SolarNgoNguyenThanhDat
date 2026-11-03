@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Điều Khiển Quản Trị - Hoàng Giang Solar</title>
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+  <div class="admin-wrapper">
+    <!-- 1. SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <img src="assets/images/logo.png" alt="Logo" onerror="this.src='https://placehold.co/120x40/FFFFFF/0F3E6D?text=HGS'">
+        <div>
+          <div class="fw-bold leading-none fs-6 text-warning">HOÀNG GIANG</div>
+          <div class="small opacity-75" style="font-size: 0.75rem;">Support Admin v2.0</div>
+        </div>
+      </div>
+
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="#dashboardSection" class="admin-menu-link active" onclick="switchAdminTab('dashboard', this)">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Bảng Điều Khiển</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#requestsSection" class="admin-menu-link" onclick="switchAdminTab('requests', this)">
+            <i class="fa-solid fa-ticket"></i>
+            <span>Quản Lý Yêu Cầu</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#equipmentSection" class="admin-menu-link" onclick="switchAdminTab('equipment', this)">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Hồ Sơ Thiết Bị & Bảo Hành</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#kbSection" class="admin-menu-link" onclick="switchAdminTab('kb', this)">
+            <i class="fa-solid fa-book-bookmark"></i>
+            <span>Mã Lỗi Inverter & KB</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#categoriesSection" class="admin-menu-link" onclick="switchAdminTab('categories', this)">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Danh Mục Dịch Vụ</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#usersSection" class="admin-menu-link" onclick="switchAdminTab('users', this)">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Tài Khoản & Quyền</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#logsSection" class="admin-menu-link" onclick="switchAdminTab('logs', this)">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Nhật Ký Phản Hồi</span>
+          </a>
+        </li>
+
+        <li class="my-3 border-top border-white-50 opacity-25"></li>
+
+        <li class="admin-menu-item">
+          <a href="home.html" class="admin-menu-link text-warning">
+            <i class="fa-solid fa-house"></i>
+            <span>Xem Trang Chủ</span>
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="index.html" class="admin-menu-link">
+            <i class="fa-solid fa-headset"></i>
+            <span>Cổng Khách Hàng</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="admin-sidebar-footer">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle bg-warning text-dark p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div class="text-truncate" style="max-width: 130px;">
+              <div class="fw-bold small text-white" id="adminUserName">Võ Hoàng Nhật</div>
+              <div class="text-white-50 small" style="font-size: 0.7rem;" id="adminUserRole">Quản trị viên</div>
+            </div>
+          </div>
+          <button class="btn btn-link text-danger p-0 fs-5" onclick="Auth.logout()" title="Đăng xuất">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT -->
+    <main class="admin-main">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="d-flex align-items-center gap-3">
+          <h5 class="fw-bold text-primary mb-0" id="adminPageHeading">
+            <i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng Điều Khiển Tiếp Nhận Yêu Cầu
+          </h5>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Xuất file Excel -->
+          <button class="btn btn-outline-success btn-sm" onclick="exportRequestsToCSV()" title="Xuất báo cáo sang Excel/CSV">
+            <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
+          </button>
+          <!-- Nút Reset dữ liệu gốc -->
+          <button class="btn btn-outline-secondary btn-sm" onclick="triggerFactoryReset()" title="Khôi phục dữ liệu ban đầu theo báo cáo">
+            <i class="fa-solid fa-rotate-left me-1"></i> Reset Mẫu
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Container -->
+      <div class="admin-content">
+
+        <!-- TAB 1: BẢNG ĐIỀU KHIỂN & BIỂU ĐỒ (DASHBOARD) -->
+        <div id="tab-dashboard" class="admin-tab-pane">
+          <!-- Metric Cards (KPI) -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card kpi-total">
+                <div class="kpi-header">
+                  <span class="kpi-title">Tổng Tiếp Nhận</span>
+                  <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="fa-solid fa-inbox"></i>
+                  </div>
+                </div>
+                <div class="kpi-value" id="kpiTotalRequests">0</div>
+                <div class="kpi-subtext">Toàn bộ yêu cầu hỗ trợ</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card kpi-pending">
+                <div class="kpi-header">
+                  <span class="kpi-title">Chưa Xử Lý</span>
+                  <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-warning" id="kpiPendingRequests">0</div>
+                <div class="kpi-subtext">Đang chờ kỹ thuật tiếp nhận</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card kpi-processing">
+                <div class="kpi-header">
+                  <span class="kpi-title">Đang Xử Lý</span>
+                  <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-info" id="kpiProcessingRequests">0</div>
+                <div class="kpi-subtext">Đang đo kiểm / khảo sát</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card kpi-resolved">
+                <div class="kpi-header">
+                  <span class="kpi-title">Đã Hoàn Tất</span>
+                  <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-success" id="kpiResolvedRequests">0</div>
+                <div class="kpi-subtext">Đã phản hồi khách hàng</div>
+              </div>
+            </div>
+
+            <!-- Extra KPI: Hài lòng CSAT & Thiết bị -->
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card" style="border-left: 5px solid #F59E0B;">
+                <div class="kpi-header">
+                  <span class="kpi-title">Điểm Hài Lòng (CSAT)</span>
+                  <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-star"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-warning" id="kpiCsatScore">4.9 / 5.0</div>
+                <div class="kpi-subtext" id="kpiCsatCount">Dựa trên 100% phản hồi tích cực</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card" style="border-left: 5px solid #0284C7;">
+                <div class="kpi-header">
+                  <span class="kpi-title">Thiết Bị Bảo Hành</span>
+                  <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                    <i class="fa-solid fa-shield-halved"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-info" id="kpiEquipmentCount">4 Hệ thống</div>
+                <div class="kpi-subtext">Inverter Solis, Deye, Pin Longi</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card" style="border-left: 5px solid #10B981;">
+                <div class="kpi-header">
+                  <span class="kpi-title">Khách Hàng Đăng Ký</span>
+                  <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-users"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-success" id="kpiTotalClients">3</div>
+                <div class="kpi-subtext">Tài khoản Client hợp lệ</div>
+              </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+              <div class="kpi-card" style="border-left: 5px solid #10B981;">
+                <div class="kpi-header">
+                  <span class="kpi-title">Tuân Thủ Hạn SLA</span>
+                  <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-stopwatch"></i>
+                  </div>
+                </div>
+                <div class="kpi-value text-success" id="kpiSlaStatus">100% Đạt</div>
+                <div class="kpi-subtext">Xử lý trong 4h - 24h cam kết</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+              <div class="hgs-card h-100">
+                <div class="hgs-card-header">
+                  <h6 class="hgs-card-title">
+                    <i class="fa-solid fa-chart-column text-secondary"></i>
+                    Biến Động Tiếp Nhận & Xử Lý Yêu Cầu Theo Tháng
+                  </h6>
+                </div>
+                <div style="height: 280px;">
+                  <canvas id="chartRequestsOverview"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="hgs-card h-100">
+                <div class="hgs-card-header">
+                  <h6 class="hgs-card-title">
+                    <i class="fa-solid fa-chart-pie text-secondary"></i>
+                    Phân Bổ Theo Nhóm Dịch Vụ
+                  </h6>
+                </div>
+                <div style="height: 280px; position: relative;">
+                  <canvas id="chartCategoryDistribution"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: QUẢN LÝ YÊU CẦU HỖ TRỢ (REQUESTS TABLE) -->
+        <div id="tab-requests" class="admin-tab-pane">
+          <!-- Filter & Search Bar -->
+          <div class="filter-bar">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                  <input type="text" id="adminSearchInput" class="form-control" placeholder="Tìm kiếm SĐT, mã phiếu, tên...">
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <select id="adminStatusFilter" class="form-select">
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="PENDING">Chưa xử lý (Đang chờ)</option>
+                  <option value="PROCESSING">Đang xử lý (Kỹ thuật)</option>
+                  <option value="RESOLVED">Đã xử lý (Hoàn thành)</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <select id="adminCategoryFilter" class="form-select">
+                  <!-- Populated by admin.js -->
+                </select>
+              </div>
+
+              <div class="col-md-2 text-md-end">
+                <span class="badge bg-light text-secondary border px-3 py-2" id="filteredRequestsCount">0 phiếu</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table -->
+          <div class="table-responsive table-custom mb-4">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">Mã Phiếu</th>
+                  <th style="width: 160px;">Khách Hàng</th>
+                  <th style="width: 170px;">Dịch Vụ</th>
+                  <th>Tiêu Đề & Nội Dung</th>
+                  <th style="width: 140px;">Kỹ Sư Phụ Trách</th>
+                  <th style="width: 110px;">Ưu Tiên / SLA</th>
+                  <th style="width: 130px;">Trạng Thái</th>
+                  <th style="width: 90px;">Đánh Giá</th>
+                  <th style="width: 90px;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="adminRequestsTbody">
+                <!-- Rendered dynamically by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 3: HỒ SƠ THIẾT BỊ & BẢO HÀNH (EQUIPMENT ASSETS) -->
+        <div id="tab-equipment" class="admin-tab-pane d-none">
+          <div class="hgs-card">
+            <div class="hgs-card-header d-flex justify-content-between align-items-center">
+              <h5 class="hgs-card-title"><i class="fa-solid fa-shield-halved text-secondary"></i> Quản Lý Thiết Bị Lắp Đặt & Thời Hạn Bảo Hành Chính Hãng</h5>
+              <button class="btn btn-sm btn-primary" onclick="alert('Tính năng thêm hồ sơ thiết bị mới đang được liên kết với phòng Dự án.');">
+                <i class="fa-solid fa-plus me-1"></i> Thêm Thiết Bị Mới
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Số Serial (S/N)</th>
+                    <th>Thiết Bị & Thông Số</th>
+                    <th>Khách Hàng & SĐT</th>
+                    <th>Ngày Lắp Đặt</th>
+                    <th>Hạn Bảo Hành</th>
+                    <th>Tình Trạng</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adminEquipmentTbody">
+                  <!-- Rendered by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: MÃ LỖI INVERTER & CẨM NANG KỸ THUẬT (KNOWLEDGE BASE) -->
+        <div id="tab-kb" class="admin-tab-pane d-none">
+          <div class="hgs-card">
+            <div class="hgs-card-header">
+              <h5 class="hgs-card-title"><i class="fa-solid fa-book-bookmark text-secondary"></i> Thư Viện Tra Cứu Mã Lỗi Biến Tần Solis, Deye & Camera Hikvision</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr class="table-light">
+                    <th style="width: 100px;">Mã Lỗi</th>
+                    <th style="width: 140px;">Thương Hiệu</th>
+                    <th style="width: 220px;">Tên Lỗi & Hiện Tượng</th>
+                    <th>Nguyên Nhân Gốc</th>
+                    <th>Quy Trình Khắc Phục Chuẩn</th>
+                    <th style="width: 90px;">Tác Vụ</th>
+                  </tr>
+                </thead>
+                <tbody id="adminKbTbody">
+                  <!-- Rendered by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: DANH MỤC DỊCH VỤ -->
+        <div id="tab-categories" class="admin-tab-pane d-none">
+          <div class="hgs-card">
+            <div class="hgs-card-header">
+              <h5 class="hgs-card-title"><i class="fa-solid fa-list-check text-secondary"></i> Danh Mục Nhóm Dịch Vụ Năng Lượng & An Ninh</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Mã Danh Mục</th>
+                    <th>Tên Nhóm Dịch Vụ & Mô Tả</th>
+                    <th>Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCategoriesTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: QUẢN LÝ NGƯỜI DÙNG -->
+        <div id="tab-users" class="admin-tab-pane d-none">
+          <div class="hgs-card">
+            <div class="hgs-card-header">
+              <h5 class="hgs-card-title"><i class="fa-solid fa-users-gear text-secondary"></i> Danh Sách Tài Khoản & Phân Quyền (RBAC)</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Họ và Tên</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Email</th>
+                    <th>Vai Trò (Role)</th>
+                    <th>Trạng Thái</th>
+                    <th>Ngày Tạo</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 7: NHẬT KÝ PHẢN HỒI (RESPONSE_LOG) -->
+        <div id="tab-logs" class="admin-tab-pane d-none">
+          <div class="hgs-card">
+            <div class="hgs-card-header">
+              <h5 class="hgs-card-title"><i class="fa-solid fa-clock-rotate-left text-secondary"></i> Nhật Ký Tương Tác & Lịch Sử Phản Hồi Toàn Hệ Thống</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Mã Nhật Ký</th>
+                    <th>Mã Phiếu</th>
+                    <th>Người Phản Hồi</th>
+                    <th>Nội Dung Chi Tiết</th>
+                    <th>Thời Điểm</th>
+                  </tr>
+                </thead>
+                <tbody id="adminLogsTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: PHẢN HỒI & CẬP NHẬT TRẠNG THÁI YÊU CẦU (ADMIN RESPONSE MODAL) -->
+  <div class="modal fade" id="adminResponseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header bg-primary text-white py-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning text-dark font-monospace fs-6" id="adminModalRequestCode">HGS-2026-001</span>
+            <span class="fw-bold fs-5">Xử Lý & Phản Hồi Yêu Cầu Hỗ Trợ</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto;">
+          <!-- Thông tin khách hàng & yêu cầu -->
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <div class="row g-2 small">
+              <div class="col-sm-6">
+                <span class="text-muted">Khách hàng:</span> <strong id="adminModalCustomerName">Nguyễn Văn A</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Số điện thoại:</span> <a href="#" id="adminModalPhone" class="fw-bold text-decoration-none">0913704141</a>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Email:</span> <span id="adminModalEmail">email@gmail.com</span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Địa chỉ:</span> <span id="adminModalAddress">Bến Cát, Bình Dương</span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Nhóm dịch vụ:</span> <strong class="text-primary" id="adminModalCategory">Điện mặt trời</strong>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Trạng thái:</span> <span id="adminModalStatusBadge"></span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Hạn cam kết SLA:</span> <span class="fw-bold text-success" id="adminModalSla">Trong hạn</span>
+              </div>
+              <div class="col-sm-6">
+                <span class="text-muted">Đánh giá khách hàng:</span> <span id="adminModalRatingBadge">Chưa đánh giá</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nội dung yêu cầu của khách hàng -->
+          <div class="mb-3">
+            <h6 class="fw-bold text-primary mb-1" id="adminModalTitle">Tiêu đề yêu cầu</h6>
+            <div class="p-3 border rounded-3 bg-white text-secondary small" id="adminModalContent" style="white-space: pre-line;"></div>
+          </div>
+
+          <!-- Ảnh đính kèm (nếu có) -->
+          <div id="adminModalAttachmentBox" class="mb-3 d-none">
+            <div class="small fw-bold text-muted mb-1"><i class="fa-solid fa-paperclip me-1"></i> Ảnh sự cố thực tế:</div>
+            <img id="adminModalAttachmentImg" src="" alt="Ảnh sự cố" class="img-fluid rounded border" style="max-height: 200px;">
+          </div>
+
+          <!-- Timeline lịch sử phản hồi -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-comments me-1 text-secondary"></i> Lịch Sử Trao Đổi (Response Logs):</h6>
+            <div id="adminModalTimeline"></div>
+          </div>
+
+          <!-- Form Soạn Thảo Phản Hồi (ACID Transaction) -->
+          <div class="p-3 border-top bg-light rounded-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-primary mb-0"><i class="fa-solid fa-pen-to-square me-1"></i> Soạn Thảo Phản Hồi / Hướng Dẫn Kỹ Thuật:</h6>
+              <!-- Mẫu câu trả lời nhanh -->
+              <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-bolt text-warning me-1"></i> Mẫu câu trả lời nhanh
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end canned-dropdown-menu shadow-sm" id="cannedResponsesMenu">
+                  <!-- Populated by admin.js -->
+                </ul>
+              </div>
+            </div>
+
+            <textarea id="adminResponseContent" class="form-control mb-3" rows="4" placeholder="Nhập câu trả lời giải đáp, báo giá hoặc thông báo lịch kiểm tra của kỹ thuật viên..."></textarea>
+
+            <div class="row g-2 align-items-center mb-3">
+              <div class="col-sm-4">
+                <label class="form-label small fw-semibold mb-1">Cập nhật trạng thái:</label>
+                <select id="adminResponseStatusSelect" class="form-select form-select-sm">
+                  <option value="RESOLVED" selected>Đã xử lý (Hoàn tất phản hồi)</option>
+                  <option value="PROCESSING">Đang xử lý (Kỹ thuật kiểm tra)</option>
+                  <option value="PENDING">Chưa xử lý (Giữ nguyên)</option>
+                </select>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label small fw-semibold mb-1">Phân công kỹ sư phụ trách:</label>
+                <select id="adminAssignTechSelect" class="form-select form-select-sm">
+                  <option value="Võ Hoàng Nhật">Võ Hoàng Nhật (Kỹ sư trưởng)</option>
+                  <option value="Ngô Nguyễn Thành Đạt" selected>Ngô Nguyễn Thành Đạt (Khảo sát & Support)</option>
+                  <option value="Trần Quốc Tuấn">Trần Quốc Tuấn (Sửa Inverter/Tủ điện)</option>
+                  <option value="Lê Văn Dũng">Lê Văn Dũng (Bảo trì pin & Camera)</option>
+                </select>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-check mt-sm-4">
+                  <input class="form-check-input" type="checkbox" id="adminInternalNoteCheck">
+                  <label class="form-check-label small text-muted" for="adminInternalNoteCheck">
+                    Ghi chú nội bộ
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-solar w-100 py-2 rounded-3 fw-bold" onclick="submitAdminResponse()">
+              <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận Gửi Phản Hồi & Cập Nhật Hệ Thống
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/toast.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script>
+    function switchAdminTab(tabKey, linkEl) {
+      document.querySelectorAll('.admin-menu-link').forEach(l => l.classList.remove('active'));
+      if (linkEl) linkEl.classList.add('active');
+
+      document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.add('d-none'));
+
+      const headings = {
+        dashboard: '<i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng Điều Khiển Tiếp Nhận Yêu Cầu',
+        requests: '<i class="fa-solid fa-ticket me-2 text-warning"></i>Quản Lý & Phản Hồi Yêu Cầu Hỗ Trợ',
+        equipment: '<i class="fa-solid fa-shield-halved me-2 text-success"></i>Hồ Sơ Thiết Bị & Quản Lý Bảo Hành Chính Hãng',
+        kb: '<i class="fa-solid fa-book-bookmark me-2 text-danger"></i>Thư Viện Tra Cứu Mã Lỗi Biến Tần & Camera',
+        categories: '<i class="fa-solid fa-list-check me-2 text-warning"></i>Quản Lý Danh Mục Nhóm Dịch Vụ',
+        users: '<i class="fa-solid fa-users-gear me-2 text-warning"></i>Quản Lý Tài Khoản & Phân Quyền (RBAC)',
+        logs: '<i class="fa-solid fa-clock-rotate-left me-2 text-warning"></i>Nhật Ký Phản Hồi Toàn Hệ Thống'
+      };
+
+      const targetPane = document.getElementById('tab-' + tabKey);
+      if (targetPane) {
+        targetPane.classList.remove('d-none');
+      }
+
+      const headingEl = document.getElementById('adminPageHeading');
+      if (headingEl && headings[tabKey]) {
+        headingEl.innerHTML = headings[tabKey];
+      }
+    }
+  </script>
+</body>
+</html>
