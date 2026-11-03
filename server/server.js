@@ -7,6 +7,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 const { readStore, writeStore } = require('./config/db');
 
@@ -18,9 +19,25 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Phục vụ giao diện Frontend tĩnh
+// Phục vụ giao diện Frontend tĩnh (hỗ trợ cả môi trường Local & Serverless)
+const ROOT_DIR = process.cwd();
 const FRONTEND_DIR = path.join(__dirname, '..');
 app.use(express.static(FRONTEND_DIR));
+app.use(express.static(ROOT_DIR));
+
+// Helper hàm tìm và trả về file HTML
+function sendHtml(res, filename) {
+  const p1 = path.join(FRONTEND_DIR, filename);
+  const p2 = path.join(ROOT_DIR, filename);
+  if (fs.existsSync(p1)) return res.sendFile(p1);
+  if (fs.existsSync(p2)) return res.sendFile(p2);
+  res.status(404).send(`Không tìm thấy file ${filename}`);
+}
+
+app.get('/home.html', (req, res) => sendHtml(res, 'home.html'));
+app.get('/index.html', (req, res) => sendHtml(res, 'index.html'));
+app.get('/login.html', (req, res) => sendHtml(res, 'login.html'));
+app.get('/admin.html', (req, res) => sendHtml(res, 'admin.html'));
 
 // Logging middleware
 app.use((req, res, next) => {

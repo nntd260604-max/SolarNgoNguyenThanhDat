@@ -2,19 +2,7 @@
   "name": "hoang-giang-solar-web",
   "version": "1.0.0",
   "description": "Website & Hệ thống Quản lý Hỗ trợ Khách hàng - Công ty TNHH TM DV Hoàng Giang Solar",
-  "main": "server/server.js",
-  "scripts": {
-    "start": "node server/server.js",
-    "build": "echo 'Vercel build complete'"
-  },
-  "keywords": [
-    "solar",
-    "hoang-giang-solar",
-    "express",
-    "vercel"
-  ],
-  "author": "Ngô Nguyễn Thành Đạt (MSSV: 2224801030332 - Lớp: D22KTPM03)",
-  "license": "ISC",
+  "private": true,
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2"
