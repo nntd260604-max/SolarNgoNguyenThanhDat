@@ -3,7 +3,7 @@
   "cleanUrls": false,
   "functions": {
     "api/index.js": {
-      "includeFiles": "*.html"
+      "includeFiles": "{*.html,assets/**,server/config/**}"
     }
   },
   "rewrites": [
