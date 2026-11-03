@@ -1,0 +1,26 @@
+{
+  "name": "hoang-giang-solar-backend",
+  "version": "1.0.0",
+  "description": "Hệ thống hỗ trợ tiếp nhận & quản lý yêu cầu khách hàng - Hoàng Giang Solar (Báo cáo thực tập tốt nghiệp)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "express",
+    "nodejs",
+    "mysql",
+    "jwt",
+    "bcrypt",
+    "hoang-giang-solar",
+    "support-system"
+  ],
+  "author": "Ngô Nguyễn Thành Đạt (MSSV: 2224801030332)",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
