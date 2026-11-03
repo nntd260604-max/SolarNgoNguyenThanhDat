@@ -567,16 +567,20 @@ app.get('/', (req, res) => {
   res.redirect('/home.html');
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`=================================================================`);
-  console.log(` CÔNG TY TNHH TM DV HOÀNG GIANG SOLAR - HỆ THỐNG QUẢN LÝ HỖ TRỢ`);
-  console.log(` Sinh viên: Ngô Nguyễn Thành Đạt (MSSV: 2224801030332 - D22KTPM03)`);
-  console.log(` Server đang chạy tại: http://localhost:${PORT}`);
-  console.log(` - Trang chủ:          http://localhost:${PORT}/home.html`);
-  console.log(` - Cổng khách hàng:    http://localhost:${PORT}/index.html`);
-  console.log(` - Đăng nhập/Đăng ký:  http://localhost:${PORT}/login.html`);
-  console.log(` - Quản trị Admin:     http://localhost:${PORT}/admin.html`);
-  console.log(` - Tài liệu API Docs:  http://localhost:${PORT}/api/docs`);
-  console.log(`=================================================================`);
-});
+// Start Server only if executed directly (e.g., node server/server.js)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`=================================================================`);
+    console.log(` CÔNG TY TNHH TM DV HOÀNG GIANG SOLAR - HỆ THỐNG QUẢN LÝ HỖ TRỢ`);
+    console.log(` Sinh viên: Ngô Nguyễn Thành Đạt (MSSV: 2224801030332 - D22KTPM03)`);
+    console.log(` Server đang chạy tại: http://localhost:${PORT}`);
+    console.log(` - Trang chủ:          http://localhost:${PORT}/home.html`);
+    console.log(` - Cổng khách hàng:    http://localhost:${PORT}/index.html`);
+    console.log(` - Đăng nhập/Đăng ký:  http://localhost:${PORT}/login.html`);
+    console.log(` - Quản trị Admin:     http://localhost:${PORT}/admin.html`);
+    console.log(` - Tài liệu API Docs:  http://localhost:${PORT}/api/docs`);
+    console.log(`=================================================================`);
+  });
+}
+
+module.exports = app;

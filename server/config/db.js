@@ -422,27 +422,61 @@ const INITIAL_STORE = {
   ]
 };
 
+const TMP_DATA_FILE = path.join('/tmp', 'store.json');
+let memoryStore = null;
+
 function readStore() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_STORE, null, 2), 'utf8');
-    return INITIAL_STORE;
-  }
+  if (memoryStore) return memoryStore;
+
+  // Check /tmp file first (for serverless environments like Vercel)
   try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    // Đảm bảo các mảng mới luôn hiện diện
-    if (!parsed.installed_equipment) parsed.installed_equipment = INITIAL_STORE.installed_equipment;
-    if (!parsed.knowledge_base) parsed.knowledge_base = INITIAL_STORE.knowledge_base;
-    if (!parsed.technicians) parsed.technicians = INITIAL_STORE.technicians;
-    if (!parsed.canned_responses) parsed.canned_responses = INITIAL_STORE.canned_responses;
-    return parsed;
-  } catch {
-    return INITIAL_STORE;
+    if (fs.existsSync(TMP_DATA_FILE)) {
+      const raw = fs.readFileSync(TMP_DATA_FILE, 'utf8');
+      memoryStore = JSON.parse(raw);
+      return memoryStore;
+    }
+  } catch (e) {
+    // Continue fallback
   }
+
+  // Read local store.json
+  if (fs.existsSync(DATA_FILE)) {
+    try {
+      const raw = fs.readFileSync(DATA_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (!parsed.installed_equipment) parsed.installed_equipment = INITIAL_STORE.installed_equipment;
+      if (!parsed.knowledge_base) parsed.knowledge_base = INITIAL_STORE.knowledge_base;
+      if (!parsed.technicians) parsed.technicians = INITIAL_STORE.technicians;
+      if (!parsed.canned_responses) parsed.canned_responses = INITIAL_STORE.canned_responses;
+      memoryStore = parsed;
+      return memoryStore;
+    } catch {
+      memoryStore = JSON.parse(JSON.stringify(INITIAL_STORE));
+      return memoryStore;
+    }
+  }
+
+  memoryStore = JSON.parse(JSON.stringify(INITIAL_STORE));
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_STORE, null, 2), 'utf8');
+  } catch {
+    // Read-only filesystem, safe to ignore
+  }
+  return memoryStore;
 }
 
 function writeStore(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  memoryStore = data;
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    // Fallback for Vercel Serverless read-only environment
+    try {
+      fs.writeFileSync(TMP_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('Cannot persist to /tmp:', e.message);
+    }
+  }
 }
 
 module.exports = {
