@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Style -->
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- Cloudflare Turnstile Captcha API -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -549,7 +551,11 @@
                   <label class="form-label fw-semibold small">Nội dung yêu cầu chi tiết <span class="text-danger">*</span></label>
                   <textarea id="quickContent" class="form-control" rows="3" placeholder="Mô tả số tiền điện hàng tháng, diện tích mái tôn/mái bằng hoặc thắc mắc của bạn..." required></textarea>
                 </div>
-                <div class="col-12 text-center mt-4">
+                <!-- Cloudflare Turnstile Captcha -->
+                <div class="col-12 text-center my-2">
+                  <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
+                </div>
+                <div class="col-12 text-center mt-3">
                   <button type="submit" class="btn btn-solar btn-lg px-5 rounded-pill">
                     <i class="fa-solid fa-paper-plane me-2"></i> Gửi Yêu Cầu Cho Hoàng Giang Solar
                   </button>
@@ -763,6 +769,13 @@
         return;
       }
 
+      // Xác minh Cloudflare Turnstile Captcha
+      const turnstileResp = document.querySelector('#quickForm [name="cf-turnstile-response"]');
+      if (window.turnstile && turnstileResp && !turnstileResp.value) {
+        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm an toàn (Cloudflare Turnstile) trước khi gửi yêu cầu.');
+        return;
+      }
+
       const currentUser = Auth.getCurrentUser();
       const userId = currentUser ? currentUser.user_id : 3;
 
@@ -779,6 +792,9 @@
 
       Toast.success('Đã gửi yêu cầu!', `Cảm ơn bạn. Mã phiếu: <strong>${newReq.request_code}</strong>. Kỹ sư Hoàng Giang Solar sẽ sớm liên hệ tư vấn!`);
       document.getElementById('quickForm').reset();
+      if (window.turnstile) {
+        try { turnstile.reset(); } catch (err) {}
+      }
     }
   </script>
 </body>

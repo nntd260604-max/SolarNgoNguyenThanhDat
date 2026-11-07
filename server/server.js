@@ -156,12 +156,21 @@ app.get('/api/v1/categories', (req, res) => {
 
 // 3. SUPPORT REQUESTS
 app.get('/api/v1/requests', (req, res) => {
-  const { status, categoryId, userId, search } = req.query;
+  const { status, categoryId, userId, search, supportUserId, supportName } = req.query;
   const store = readStore();
   let list = store.requests || [];
 
   if (userId) {
     list = list.filter(r => Number(r.user_id) === Number(userId));
+  }
+  if (supportUserId || supportName) {
+    const sId = Number(supportUserId) || 2;
+    const sName = (supportName || 'Ngô Nguyễn Thành Đạt').trim();
+    list = list.filter(r =>
+      Number(r.assigned_to) === sId ||
+      r.assigned_technician_name === sName ||
+      !r.assigned_technician_name
+    );
   }
   if (status && status !== 'ALL') {
     list = list.filter(r => r.status === status);
@@ -262,24 +271,51 @@ app.post('/api/v1/requests/:id/rate', (req, res) => {
   });
 });
 
-// 5. ASSIGN TECHNICIAN ENDPOINT
+// 5. ASSIGN TECHNICIAN ENDPOINT (CHỈ DÀNH CHO ADMIN ĐIỀU PHỐI)
 app.put('/api/v1/requests/:id/assign', (req, res) => {
-  const { technician_id, technician_name } = req.body;
+  const { technician_id, technician_name, priority, directive_note, actor_role } = req.body;
+  if (actor_role && actor_role !== 'ADMIN') {
+    return res.status(403).json({
+      success: false,
+      message: 'Từ chối quyền hạn (RBAC): Chỉ Quản trị viên (Admin) mới được phép điều phối và phân công nhân sự phụ trách.'
+    });
+  }
+
   const store = readStore();
   const reqItem = store.requests.find(r => Number(r.request_id) === Number(req.params.id));
   if (!reqItem) {
     return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu.' });
   }
 
-  reqItem.assigned_to = technician_id ? Number(technician_id) : null;
-  reqItem.assigned_technician_name = technician_name || 'Chuyên viên kỹ thuật';
-  reqItem.updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  reqItem.assigned_to = technician_id ? Number(technician_id) : 2;
+  reqItem.assigned_technician_name = technician_name || 'Ngô Nguyễn Thành Đạt';
+  if (priority) {
+    reqItem.priority = priority;
+    reqItem.sla_deadline = calculateSLADeadline(priority);
+  }
+  reqItem.updated_at = now;
+
+  if (directive_note && directive_note.trim()) {
+    const newLogId = store.response_logs.length > 0 ? Math.max(...store.response_logs.map(l => l.response_id)) + 1 : 1;
+    store.response_logs.push({
+      response_id: newLogId,
+      request_id: Number(req.params.id),
+      responder_id: 1,
+      responder_name: 'Võ Hoàng Nhật (Admin Điều phối)',
+      response_content: `[Chỉ đạo điều phối tới ${reqItem.assigned_technician_name}]: ${directive_note.trim()}`,
+      previous_status: reqItem.status,
+      new_status: reqItem.status,
+      is_internal_note: 1,
+      created_at: now
+    });
+  }
 
   writeStore(store);
-  return res.json({ success: true, message: 'Phân công kỹ thuật viên thành công.', data: reqItem });
+  return res.json({ success: true, message: 'Điều phối và phân công nhân viên phụ trách thành công.', data: reqItem });
 });
 
-// 6. RESPONSE LOGS & TRANSACTION ATOMIC STATUS UPDATE (ACID)
+// 6. RESPONSE LOGS & TRANSACTION ATOMIC STATUS UPDATE (CHỈ DÀNH CHO NHÂN VIÊN TƯ VẤN - SUPPORT)
 app.get('/api/v1/requests/:id/responses', (req, res) => {
   const store = readStore();
   const logs = (store.response_logs || []).filter(l => Number(l.request_id) === Number(req.params.id));
@@ -288,9 +324,17 @@ app.get('/api/v1/requests/:id/responses', (req, res) => {
 });
 
 app.post('/api/v1/requests/:id/responses', (req, res) => {
-  const { responder_id, responder_name, response_content, new_status, is_internal_note } = req.body;
+  const { responder_id, responder_name, responder_role, response_content, new_status, is_internal_note } = req.body;
   if (!response_content || !response_content.trim()) {
     return res.status(400).json({ success: false, message: 'Nội dung phản hồi không được để trống.' });
+  }
+
+  // Ngăn chặn Admin trực tiếp phản hồi tư vấn khách hàng (Phân tách nghiệp vụ RBAC)
+  if ((responder_role === 'ADMIN' || Number(responder_id) === 1) && !is_internal_note) {
+    return res.status(403).json({
+      success: false,
+      message: 'Từ chối nghiệp vụ (RBAC): Quản trị viên (Admin) chỉ thực hiện điều phối nhân sự, không trực tiếp tư vấn giải đáp khách hàng.'
+    });
   }
 
   const store = readStore();
@@ -308,8 +352,8 @@ app.post('/api/v1/requests/:id/responses', (req, res) => {
   const newLog = {
     response_id: newLogId,
     request_id: Number(req.params.id),
-    responder_id: Number(responder_id) || 1,
-    responder_name: responder_name || 'Võ Hoàng Nhật (Quản trị viên)',
+    responder_id: Number(responder_id) || 2,
+    responder_name: responder_name || 'Ngô Nguyễn Thành Đạt (Chuyên viên Tư vấn)',
     response_content: response_content.trim(),
     previous_status: prevStatus,
     new_status: statusToUpdate,
@@ -318,6 +362,10 @@ app.post('/api/v1/requests/:id/responses', (req, res) => {
   };
 
   reqItem.status = statusToUpdate;
+  if (!reqItem.assigned_technician_name) {
+    reqItem.assigned_to = Number(responder_id) || 2;
+    reqItem.assigned_technician_name = 'Ngô Nguyễn Thành Đạt';
+  }
   reqItem.updated_at = now;
   store.response_logs.push(newLog);
 
@@ -325,7 +373,7 @@ app.post('/api/v1/requests/:id/responses', (req, res) => {
 
   return res.status(201).json({
     success: true,
-    message: 'Phản hồi đã được ghi nhận và đồng bộ trạng thái thành công.',
+    message: 'Phản hồi tư vấn đã được ghi nhận và đồng bộ trạng thái thành công.',
     data: { request: reqItem, log: newLog }
   });
 });
@@ -480,7 +528,45 @@ app.post('/api/v1/chatbot', (req, res) => {
   });
 });
 
-// 12. SWAGGER / API DOCS INTERACTIVE PAGE
+// 12. CLOUDFLARE TURNSTILE CAPTCHA VERIFICATION ENDPOINT
+app.post('/api/v1/verify-turnstile', async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'Thiếu mã token Cloudflare Turnstile.' });
+  }
+
+  const secretKey = process.env.TURNSTILE_SECRET_KEY || '0x4AAAAAAAF3BxYezMDppjdbWjt8XqHegOC';
+  const remoteIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append('secret', secretKey);
+    formData.append('response', token);
+    if (remoteIp) formData.append('remoteip', remoteIp);
+
+    const cfRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    const result = await cfRes.json();
+    if (result.success) {
+      return res.json({ success: true, message: 'Xác minh Cloudflare Turnstile thành công!', data: result });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Mã xác minh Turnstile không hợp lệ hoặc đã hết hạn.',
+        errors: result['error-codes']
+      });
+    }
+  } catch (err) {
+    console.error('Lỗi kiểm tra Turnstile:', err.message);
+    return res.json({ success: true, message: 'Bỏ qua xác minh do mạng cục bộ.', bypass: true });
+  }
+});
+
+// 13. SWAGGER / API DOCS INTERACTIVE PAGE
 app.get('/api/docs', (req, res) => {
   res.send(`
     <!DOCTYPE html>

@@ -15,7 +15,8 @@ const STORAGE_KEYS = {
   KNOWLEDGE_BASE: 'hgs_knowledge_base',
   TECHNICIANS: 'hgs_technicians',
   CURRENT_USER: 'hgs_current_user',
-  TOKEN: 'hgs_auth_token'
+  TOKEN: 'hgs_auth_token',
+  RBAC_VERSION: 'hgs_rbac_separated_v2'
 };
 
 // Initial Seed Data matching report
@@ -261,11 +262,10 @@ const DEFAULT_SEED_DATA = {
     }
   ],
 
-  // 3. Kỹ thuật viên phân công & SLA
+  // 3. Nhân sự Tư vấn & Kỹ thuật trực tiếp xử lý yêu cầu (Tách biệt với Admin điều phối)
   technicians: [
-    { tech_id: 1, name: 'Võ Hoàng Nhật', role: 'Kỹ sư Trưởng Điện Mặt Trời', phone: '0913704141', specialty: 'Biến tần Solis & Deye, Tủ điện Hybrid' },
-    { tech_id: 2, name: 'Ngô Nguyễn Thành Đạt', role: 'Chuyên viên Hỗ trợ & Khảo sát', phone: '0918765432', specialty: 'Khảo sát công trình, Báo giá, Tiếp nhận hệ thống' },
-    { tech_id: 3, name: 'Trần Quốc Tuấn', role: 'Kỹ thuật viên Sửa chữa', phone: '0977222333', specialty: 'Xử lý lỗi biến tần, Sửa mạch điện, Thay thế linh kiện' },
+    { tech_id: 2, name: 'Ngô Nguyễn Thành Đạt', role: 'Nhân viên Tư vấn & Hỗ trợ KH', phone: '0918765432', specialty: 'Tư vấn giải pháp, Báo giá, Hỗ trợ kỹ thuật từ xa' },
+    { tech_id: 3, name: 'Trần Quốc Tuấn', role: 'Kỹ thuật viên Sửa chữa Inverter', phone: '0977222333', specialty: 'Xử lý lỗi biến tần Solis/Deye, Sửa mạch điện' },
     { tech_id: 4, name: 'Lê Văn Dũng', role: 'Kỹ thuật viên Bảo trì & Camera', phone: '0966444555', specialty: 'Vệ sinh tấm pin, Lắp đặt camera Hikvision' }
   ],
 
@@ -284,12 +284,12 @@ const DEFAULT_SEED_DATA = {
       priority: 'HIGH',
       status: 'RESOLVED',
       attachment_url: 'assets/images/solar_fields.jpeg',
-      assigned_to: 1,
-      assigned_technician_name: 'Võ Hoàng Nhật',
+      assigned_to: 2,
+      assigned_technician_name: 'Ngô Nguyễn Thành Đạt',
       sla_deadline: '2026-10-16 08:30:00',
       sla_status: 'IN_SLA',
       rating_score: 5,
-      rating_comment: 'Kỹ thuật viên Võ Hoàng Nhật xử lý rất nhanh, bấm lại đầu cos MC4 và chỉnh lại Wi-Fi là máy chạy ngon lành. Đánh giá 5 sao!',
+      rating_comment: 'Nhân viên hỗ trợ Ngô Nguyễn Thành Đạt tư vấn và hướng dẫn xử lý rất nhanh, bấm lại đầu cos MC4 và chỉnh lại Wi-Fi là máy chạy ngon lành. Đánh giá 5 sao!',
       rated_at: '2026-10-15 12:00:00',
       created_at: '2026-10-15 08:30:00',
       updated_at: '2026-10-15 11:45:00'
@@ -374,8 +374,8 @@ const DEFAULT_SEED_DATA = {
       priority: 'MEDIUM',
       status: 'PENDING',
       attachment_url: null,
-      assigned_to: 1,
-      assigned_technician_name: 'Võ Hoàng Nhật',
+      assigned_to: null,
+      assigned_technician_name: null,
       sla_deadline: '2026-10-28 16:45:00',
       sla_status: 'IN_SLA',
       created_at: '2026-10-26 16:45:00',
@@ -388,30 +388,41 @@ const DEFAULT_SEED_DATA = {
       response_id: 1,
       request_id: 1,
       responder_id: 1,
-      responder_name: 'Võ Hoàng Nhật (Quản trị viên / Trưởng bộ phận KT)',
-      response_content: 'Chào anh An, Kỹ thuật viên Hoàng Giang Solar đã gọi điện kiểm tra từ xa. Lỗi đèn Alarm đỏ do đứt kết nối cáp DC ngõ vào và Wi-Fi router nhà anh đổi mật khẩu. Kỹ thuật viên đã đến công trình xử lý bấm lại đầu nối MC4 và cài lại mạng Wi-Fi lúc 11h30. Hiện hệ thống đã phát điện bình thường công suất 4.8kW.',
+      responder_name: 'Võ Hoàng Nhật (Admin Điều phối)',
+      response_content: '[Lệnh điều phối nội bộ]: Phân công nhân viên Ngô Nguyễn Thành Đạt tiếp nhận và hỗ trợ khách hàng Nguyễn Văn An kiểm tra lỗi đèn Alarm đỏ biến tần Solis 5kW trong hạn SLA 24h.',
+      previous_status: 'PENDING',
+      new_status: 'PENDING',
+      is_internal_note: 1,
+      created_at: '2026-10-15 08:45:00'
+    },
+    {
+      response_id: 2,
+      request_id: 1,
+      responder_id: 2,
+      responder_name: 'Ngô Nguyễn Thành Đạt (Nhân viên Tư vấn & Hỗ trợ)',
+      response_content: 'Chào anh An, bộ phận Hỗ trợ Hoàng Giang Solar đã gọi điện kiểm tra từ xa. Lỗi đèn Alarm đỏ do lỏng kết nối cáp DC ngõ vào và Wi-Fi router nhà anh đổi mật khẩu. Đã xử lý bấm lại đầu nối MC4 và cài lại mạng Wi-Fi lúc 11h30. Hiện hệ thống đã phát điện bình thường công suất 4.8kW.',
       previous_status: 'PENDING',
       new_status: 'RESOLVED',
       is_internal_note: 0,
       created_at: '2026-10-15 11:45:00'
     },
     {
-      response_id: 2,
+      response_id: 3,
       request_id: 2,
       responder_id: 2,
-      responder_name: 'Ngô Nguyễn Thành Đạt (Hỗ trợ viên / Tư vấn giải pháp)',
-      response_content: 'Kính chào chị Bích, Phòng Kinh doanh Hoàng Giang Solar đã gửi chi tiết bảng dự toán hệ thống Hybrid 10kW sử dụng Biến tần Deye 10kW 3 pha và 2 pack Pin Lithium Deye 5.12kWh qua email tranthibich@gmail.com. Đã liên hệ Zalo giải thích các hạng mục bảo hành 5 năm cho Inverter và 10 năm cho pin lưu trữ. Chị kiểm tra hòm thư nhé ạ.',
+      responder_name: 'Ngô Nguyễn Thành Đạt (Nhân viên Tư vấn & Hỗ trợ)',
+      response_content: 'Kính chào chị Bích, bộ phận Tư vấn Hoàng Giang Solar đã gửi chi tiết bảng dự toán hệ thống Hybrid 10kW sử dụng Biến tần Deye 10kW 3 pha và 2 pack Pin Lithium Deye 5.12kWh qua email tranthibich@gmail.com. Đã liên hệ Zalo giải thích các hạng mục bảo hành 5 năm cho Inverter và 10 năm cho pin lưu trữ. Chị kiểm tra hòm thư nhé ạ.',
       previous_status: 'PENDING',
       new_status: 'RESOLVED',
       is_internal_note: 0,
       created_at: '2026-10-18 14:30:00'
     },
     {
-      response_id: 3,
+      response_id: 4,
       request_id: 3,
-      responder_id: 1,
-      responder_name: 'Võ Hoàng Nhật (Quản trị viên / Trưởng bộ phận KT)',
-      response_content: 'Chào anh Minh, công ty đã tiếp nhận yêu cầu bảo dưỡng 40 tấm pin nhà xưởng. Đội kỹ thuật thi công đã sắp xếp lịch vào thứ Bảy ngày 28/10 lúc 8h00 sáng. Đội ngũ gồm 2 kỹ thuật viên mang theo chổi xoay chuyên dụng và máy bơm áp lực thấp an toàn cho tấm pin. Xin cảm ơn anh!',
+      responder_id: 4,
+      responder_name: 'Lê Văn Dũng (Kỹ thuật viên Bảo trì)',
+      response_content: 'Chào anh Minh, đội bảo trì đã tiếp nhận yêu cầu vệ sinh 40 tấm pin nhà xưởng. Đội kỹ thuật thi công đã sắp xếp lịch vào thứ Bảy ngày 28/10 lúc 8h00 sáng mang theo chổi xoay chuyên dụng và máy bơm áp lực thấp an toàn cho tấm pin. Xin cảm ơn anh!',
       previous_status: 'PENDING',
       new_status: 'PROCESSING',
       is_internal_note: 0,
@@ -445,8 +456,13 @@ const DEFAULT_SEED_DATA = {
 };
 
 const DataRepository = {
-  // Khởi tạo dữ liệu nếu chưa có trong localStorage
+  // Khởi tạo dữ liệu nếu chưa có trong localStorage (hoặc nâng cấp chuẩn phân quyền RBAC v2)
   init() {
+    if (!localStorage.getItem(STORAGE_KEYS.RBAC_VERSION)) {
+      this.resetData();
+      localStorage.setItem(STORAGE_KEYS.RBAC_VERSION, 'true');
+      return;
+    }
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_SEED_DATA.users));
     }
@@ -523,6 +539,16 @@ const DataRepository = {
     if (filters.priority && filters.priority !== 'ALL') {
       list = list.filter(r => r.priority === filters.priority);
     }
+    // Phân quyền RBAC: Nhân viên Tư vấn (SUPPORT) chỉ xem phiếu được giao cho mình hoặc phiếu chưa ai nhận
+    if (filters.forSupportUser) {
+      const staffId = Number(filters.forSupportUser.user_id);
+      const staffName = (filters.forSupportUser.full_name || '').trim().toLowerCase();
+      list = list.filter(r =>
+        !r.assigned_technician_name ||
+        Number(r.assigned_to) === staffId ||
+        r.assigned_technician_name.toLowerCase() === staffName
+      );
+    }
     if (filters.search) {
       const q = filters.search.toLowerCase().trim();
       list = list.filter(r => 
@@ -561,16 +587,9 @@ const DataRepository = {
     const deadline = new Date(now.getTime() + slaHours * 3600 * 1000);
     const deadlineStr = deadline.toISOString().replace('T', ' ').substring(0, 19);
 
-    // Tự động phân công sơ bộ
-    let defaultTech = 'Ngô Nguyễn Thành Đạt';
-    let assignedId = 2;
-    if (Number(data.category_id) === 4) {
-      defaultTech = 'Võ Hoàng Nhật';
-      assignedId = 1;
-    } else if (Number(data.category_id) === 3) {
-      defaultTech = 'Lê Văn Dũng';
-      assignedId = 4;
-    }
+    // Yêu cầu mới từ khách hàng mặc định ở trạng thái Chờ Admin điều phối (chưa phân công)
+    const assignedId = data.assigned_to ? Number(data.assigned_to) : null;
+    const defaultTech = data.assigned_technician_name || null;
 
     const newReq = {
       request_id: newId,
@@ -599,9 +618,76 @@ const DataRepository = {
     return newReq;
   },
 
-  // ACID Transaction mô phỏng: Cập nhật phản hồi + chuyển trạng thái yêu cầu + cập nhật kỹ thuật viên
-  addResponseWithStatusUpdate(requestId, responderUser, content, newStatus = 'RESOLVED', isInternal = 0, reassignTechName = null) {
+  // NGHIỆP VỤ RIÊNG CỦA ADMIN: Điều phối, phân công nhân sự phụ trách & giao chỉ đạo nội bộ
+  dispatchRequestByAdmin(requestId, adminUser, assignedTechName, priority = null, directiveNote = '') {
     this.init();
+    if (!adminUser || adminUser.role !== 'ADMIN') {
+      throw new Error('Phân quyền RBAC (403 Forbidden): Chỉ Quản trị viên (Admin) mới có quyền điều phối và phân công nhân sự!');
+    }
+
+    const requests = this.getRequests();
+    const reqIndex = requests.findIndex(r => Number(r.request_id) === Number(requestId));
+    if (reqIndex === -1) {
+      throw new Error('Không tìm thấy phiếu yêu cầu có ID: ' + requestId);
+    }
+
+    const currentReq = requests[reqIndex];
+    const techs = this.getTechnicians();
+    const foundTech = techs.find(t => t.name === assignedTechName);
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    currentReq.assigned_technician_name = assignedTechName;
+    currentReq.assigned_to = foundTech ? foundTech.tech_id : 2;
+
+    if (priority && priority !== currentReq.priority) {
+      currentReq.priority = priority;
+      let slaHours = 48;
+      if (priority === 'URGENT') slaHours = 4;
+      else if (priority === 'HIGH') slaHours = 24;
+      else if (priority === 'LOW') slaHours = 72;
+      const deadline = new Date(Date.now() + slaHours * 3600 * 1000);
+      currentReq.sla_deadline = deadline.toISOString().replace('T', ' ').substring(0, 19);
+    }
+    currentReq.updated_at = nowStr;
+
+    let logs = [];
+    try {
+      logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.RESPONSE_LOGS)) || [];
+    } catch {
+      logs = [];
+    }
+
+    const newLogId = logs.length > 0 ? Math.max(...logs.map(l => l.response_id)) + 1 : 1;
+    const noteText = directiveNote && directiveNote.trim()
+      ? `[Lệnh điều phối từ Admin]: Phân công cho ${assignedTechName}. Chỉ đạo: ${directiveNote.trim()}`
+      : `[Lệnh điều phối từ Admin]: Đã phân công phiếu yêu cầu cho nhân viên ${assignedTechName} tiếp nhận và tư vấn khách hàng (Mức ưu tiên: ${currentReq.priority}).`;
+
+    const dispatchLog = {
+      response_id: newLogId,
+      request_id: Number(requestId),
+      responder_id: Number(adminUser.user_id),
+      responder_name: `${adminUser.full_name} (Admin Điều phối)`,
+      response_content: noteText,
+      previous_status: currentReq.status,
+      new_status: currentReq.status,
+      is_internal_note: 1,
+      created_at: nowStr
+    };
+
+    logs.push(dispatchLog);
+    localStorage.setItem(STORAGE_KEYS.RESPONSE_LOGS, JSON.stringify(logs));
+    localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(requests));
+
+    return { request: currentReq, log: dispatchLog };
+  },
+
+  // NGHIỆP VỤ RIÊNG CỦA NHÂN VIÊN TƯ VẤN (SUPPORT) & KHÁCH HÀNG (CLIENT): Phản hồi tư vấn & cập nhật tiến độ
+  addResponseWithStatusUpdate(requestId, responderUser, content, newStatus = 'RESOLVED', isInternal = 0) {
+    this.init();
+    if (responderUser && responderUser.role === 'ADMIN') {
+      throw new Error('Phân quyền RBAC (403 Forbidden): Quản trị viên (Admin) chỉ thực hiện điều phối & phân công nhân viên, không trực tiếp phản hồi tư vấn khách hàng!');
+    }
+
     const requests = this.getRequests();
     const reqIndex = requests.findIndex(r => Number(r.request_id) === Number(requestId));
     if (reqIndex === -1) {
@@ -609,6 +695,16 @@ const DataRepository = {
     }
 
     const currentReq = requests[reqIndex];
+
+    // Kiểm tra nếu là SUPPORT thì chỉ được xử lý phiếu được giao cho mình hoặc phiếu chưa ai nhận
+    if (responderUser && responderUser.role === 'SUPPORT') {
+      const isAssignedToOther = currentReq.assigned_technician_name &&
+        currentReq.assigned_technician_name.toLowerCase() !== responderUser.full_name.toLowerCase() &&
+        Number(currentReq.assigned_to) !== Number(responderUser.user_id);
+      if (isAssignedToOther) {
+        throw new Error(`Phân quyền RBAC: Phiếu này đã được Admin phân công cho "${currentReq.assigned_technician_name}". Bạn không có quyền xử lý chồng chéo!`);
+      }
+    }
 
     let logs = [];
     try {
@@ -624,7 +720,7 @@ const DataRepository = {
       response_id: newLogId,
       request_id: Number(requestId),
       responder_id: Number(responderUser.user_id),
-      responder_name: `${responderUser.full_name} (${responderUser.role === 'ADMIN' ? 'Quản trị viên' : responderUser.role === 'SUPPORT' ? 'Hỗ trợ viên' : 'Khách hàng'})`,
+      responder_name: `${responderUser.full_name} (${responderUser.role === 'SUPPORT' ? 'Nhân viên Tư vấn & Hỗ trợ' : 'Khách hàng'})`,
       response_content: content,
       previous_status: currentReq.status,
       new_status: newStatus,
@@ -636,9 +732,8 @@ const DataRepository = {
     currentReq.status = newStatus;
     currentReq.updated_at = nowStr;
 
-    if (reassignTechName) {
-      currentReq.assigned_technician_name = reassignTechName;
-    } else if (responderUser.role !== 'CLIENT') {
+    // Nếu phiếu chưa phân công mà Nhân viên Tư vấn vào trả lời thì tự động ghi nhận người tiếp nhận
+    if (responderUser.role === 'SUPPORT' && !currentReq.assigned_technician_name) {
       currentReq.assigned_technician_name = responderUser.full_name;
       currentReq.assigned_to = responderUser.user_id;
     }
@@ -772,19 +867,29 @@ const DataRepository = {
     return logs;
   },
 
-  updateStatus(requestId, newStatus) {
+  updateStatus(requestId, newStatus, actorUser = null) {
     this.init();
+    if (actorUser && actorUser.role === 'ADMIN') {
+      throw new Error('Phân quyền RBAC: Quản trị viên (Admin) chỉ điều phối nhân sự, không trực tiếp cập nhật trạng thái xử lý nghiệp vụ của nhân viên tư vấn!');
+    }
     const requests = this.getRequests();
     const req = requests.find(r => Number(r.request_id) === Number(requestId));
     if (!req) return null;
+    if (actorUser && actorUser.role === 'SUPPORT' && !req.assigned_technician_name) {
+      req.assigned_technician_name = actorUser.full_name;
+      req.assigned_to = actorUser.user_id;
+    }
     req.status = newStatus;
     req.updated_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
     localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(requests));
     return req;
   },
 
-  deleteRequest(requestId) {
+  deleteRequest(requestId, actorUser = null) {
     this.init();
+    if (actorUser && actorUser.role !== 'ADMIN') {
+      throw new Error('Phân quyền RBAC (403 Forbidden): Nhân viên tư vấn không có quyền xóa phiếu yêu cầu! Chỉ Quản trị viên (Admin) mới được phép xóa.');
+    }
     let requests = this.getRequests();
     requests = requests.filter(r => Number(r.request_id) !== Number(requestId));
     localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(requests));

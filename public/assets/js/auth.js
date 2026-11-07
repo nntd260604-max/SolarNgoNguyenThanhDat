@@ -40,6 +40,18 @@ const Auth = {
     return u && (u.role === 'ADMIN' || u.role === 'SUPPORT');
   },
 
+  // Kiểm tra quyền Quản trị viên cấp cao (Admin điều phối & hệ thống)
+  isStrictAdmin() {
+    const u = this.getCurrentUser();
+    return u && u.role === 'ADMIN';
+  },
+
+  // Kiểm tra quyền Nhân viên Tư vấn / Hỗ trợ khách hàng (Support)
+  isSupport() {
+    const u = this.getCurrentUser();
+    return u && u.role === 'SUPPORT';
+  },
+
   isClient() {
     const u = this.getCurrentUser();
     return u && u.role === 'CLIENT';
@@ -155,13 +167,14 @@ const Auth = {
     const user = this.getCurrentUser();
     if (user) {
       const roleBadge = user.role === 'ADMIN' 
-        ? '<span class="badge bg-danger ms-1">Admin</span>' 
+        ? '<span class="badge bg-danger ms-1">Admin Điều Phối</span>' 
         : user.role === 'SUPPORT' 
-          ? '<span class="badge bg-primary ms-1">Kỹ thuật</span>' 
+          ? '<span class="badge bg-primary ms-1">NV Tư Vấn</span>' 
           : '<span class="badge bg-success ms-1">Khách hàng</span>';
 
+      const workspaceLabel = user.role === 'ADMIN' ? 'Quản trị & Điều phối' : 'Bàn làm việc Tư vấn';
       const adminLink = (user.role === 'ADMIN' || user.role === 'SUPPORT')
-        ? `<li class="nav-item"><a class="nav-link text-warning fw-bold" href="admin.html"><i class="fa-solid fa-chart-line me-1"></i> Quản trị Admin</a></li>`
+        ? `<li class="nav-item"><a class="nav-link text-warning fw-bold" href="admin.html"><i class="fa-solid fa-chart-line me-1"></i> ${workspaceLabel}</a></li>`
         : '';
 
       container.innerHTML = `
@@ -175,7 +188,7 @@ const Auth = {
           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
             <li><h6 class="dropdown-header">${user.email}</h6></li>
             <li><a class="dropdown-item" href="index.html"><i class="fa-solid fa-ticket me-2 text-primary"></i>Yêu cầu của tôi</a></li>
-            ${(user.role === 'ADMIN' || user.role === 'SUPPORT') ? '<li><a class="dropdown-item" href="admin.html"><i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng điều khiển Admin</a></li>' : ''}
+            ${(user.role === 'ADMIN' || user.role === 'SUPPORT') ? `<li><a class="dropdown-item" href="admin.html"><i class="fa-solid fa-gauge me-2 text-warning"></i>${workspaceLabel}</a></li>` : ''}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket me-2"></i>Đăng xuất</a></li>
           </ul>

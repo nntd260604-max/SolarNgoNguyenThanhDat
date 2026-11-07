@@ -28,8 +28,64 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAdminHeader(user) {
   const nameEl = document.getElementById('adminUserName');
   const roleEl = document.getElementById('adminUserRole');
+  const subtitleEl = document.getElementById('adminSidebarSubtitle');
+  const menuReqLabelEl = document.getElementById('menuRequestsLabel');
+  const headingEl = document.getElementById('adminPageHeading');
+  const bannerEl = document.getElementById('rbacRoleBanner');
+
+  const isStrictAdmin = user && user.role === 'ADMIN';
+
   if (nameEl) nameEl.textContent = user.full_name;
-  if (roleEl) roleEl.textContent = user.role === 'ADMIN' ? 'Quản trị viên cấp cao' : 'Nhân viên Hỗ trợ kỹ thuật';
+  if (roleEl) roleEl.textContent = isStrictAdmin ? 'Quản trị & Điều phối (Admin)' : 'Chuyên viên Tư vấn (Support)';
+  if (subtitleEl) subtitleEl.textContent = isStrictAdmin ? 'Admin Điều Phối v2.0' : 'Bàn Làm Việc Tư Vấn v2.0';
+  if (menuReqLabelEl) menuReqLabelEl.textContent = isStrictAdmin ? 'Điều Phối Yêu Cầu' : 'Phiếu Được Phân Công';
+  if (headingEl) {
+    headingEl.innerHTML = isStrictAdmin
+      ? '<i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng Điều Khiển Quản Trị & Điều Phối Hệ Thống'
+      : '<i class="fa-solid fa-headset me-2 text-warning"></i>Bàn Làm Việc Nhân Viên Tư Vấn & Hỗ Trợ Kỹ Thuật';
+  }
+
+  // Ẩn/hiện các menu & nút chỉ dành riêng cho Admin
+  document.querySelectorAll('.admin-only-menu, .admin-only-btn').forEach(el => {
+    if (isStrictAdmin) {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+
+  // Hiển thị Banner phân quyền RBAC rõ ràng giữa Admin và Nhân viên Tư vấn
+  if (bannerEl) {
+    if (isStrictAdmin) {
+      bannerEl.innerHTML = `
+        <div class="alert alert-primary border-primary shadow-sm mb-0 py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div>
+            <span class="badge bg-danger me-2"><i class="fa-solid fa-user-shield me-1"></i>VAI TRÒ: QUẢN TRỊ VIÊN & ĐIỀU PHỐI (ADMIN)</span>
+            <span class="small text-dark">
+              <strong>Nghiệp vụ được phép:</strong> Điều phối & phân công nhân viên, thiết lập SLA, ghi chú chỉ đạo nội bộ, xóa phiếu rác, quản trị danh mục/tài khoản/nhật ký.
+            </span>
+          </div>
+          <div class="small text-danger fw-semibold">
+            <i class="fa-solid fa-ban me-1"></i>Giới hạn RBAC: Không trực tiếp trả lời tư vấn khách hàng & không cập nhật tiến độ xử lý của tư vấn viên.
+          </div>
+        </div>
+      `;
+    } else {
+      bannerEl.innerHTML = `
+        <div class="alert alert-info border-info shadow-sm mb-0 py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div>
+            <span class="badge bg-primary me-2"><i class="fa-solid fa-headset me-1"></i>VAI TRÒ: NHÂN VIÊN TƯ VẤN & HỖ TRỢ (SUPPORT)</span>
+            <span class="small text-dark">
+              <strong>Nghiệp vụ được phép:</strong> Xử lý phiếu được Admin phân công cho <strong>${user.full_name}</strong> (hoặc phiếu chờ nhận), trực tiếp tư vấn khách hàng & cập nhật trạng thái xử lý.
+            </span>
+          </div>
+          <div class="small text-secondary fw-semibold">
+            <i class="fa-solid fa-lock me-1"></i>Giới hạn RBAC: Không điều phối lại nhân sự, không xóa phiếu & không truy cập cấu hình Quản trị hệ thống.
+          </div>
+        </div>
+      `;
+    }
+  }
 }
 
 function refreshAdminDashboard() {
@@ -187,16 +243,27 @@ function initAdminFilters() {
   if (categoryFilter) categoryFilter.addEventListener('change', handleFilter);
 }
 
-// 4. Bảng danh sách yêu cầu hỗ trợ (Hiển thị SLA, Kỹ sư, CSAT)
+// 4. Bảng danh sách yêu cầu hỗ trợ (Hiển thị SLA, Nhân sự phụ trách, CSAT & Phân quyền RBAC)
 function renderRequestsTable(filters = {}) {
   const tbody = document.getElementById('adminRequestsTbody');
   const countEl = document.getElementById('filteredRequestsCount');
   if (!tbody) return;
 
-  const requests = DataRepository.getRequests(filters);
+  const currentUser = Auth.getCurrentUser();
+  const isStrictAdmin = Auth.isStrictAdmin();
+
+  // Nếu là Nhân viên Tư vấn (SUPPORT): chỉ hiển thị các phiếu được phân công cho mình hoặc phiếu chờ nhận
+  const effectiveFilters = { ...filters };
+  if (currentUser && currentUser.role === 'SUPPORT') {
+    effectiveFilters.forSupportUser = currentUser;
+  }
+
+  const requests = DataRepository.getRequests(effectiveFilters);
 
   if (countEl) {
-    countEl.textContent = `Hiển thị: ${requests.length} phiếu`;
+    countEl.textContent = isStrictAdmin
+      ? `Toàn hệ thống: ${requests.length} phiếu`
+      : `Hàng đợi của bạn: ${requests.length} phiếu`;
   }
 
   if (requests.length === 0) {
@@ -234,10 +301,59 @@ function renderRequestsTable(filters = {}) {
       priorityBadge = `<span class="priority-badge priority-medium">Thường (48h)</span>`;
     }
 
+    // Hiển thị nhân sự phụ trách rõ ràng (hoặc Chờ Admin điều phối)
+    const assignedDisplay = req.assigned_technician_name
+      ? `<div class="small fw-bold text-primary"><i class="fa-solid fa-user-check me-1 text-success"></i>${req.assigned_technician_name}</div>`
+      : `<span class="badge bg-warning text-dark"><i class="fa-solid fa-hourglass-start me-1"></i>Chờ điều phối</span>`;
+
     // Đánh giá CSAT
     let ratingDisplay = '<span class="text-muted small">--</span>';
     if (req.rating_score) {
       ratingDisplay = `<span class="badge bg-warning text-dark"><i class="fa-solid fa-star text-danger me-1"></i>${req.rating_score}⭐</span>`;
+    }
+
+    // Nút thao tác phân tách rõ ràng theo vai trò (ADMIN vs SUPPORT)
+    let actionButtonsHtml = '';
+    if (isStrictAdmin) {
+      // Nghiệp vụ của ADMIN: Điều phối nhân sự, In phiếu, Xóa phiếu rác (Không trực tiếp trả lời tư vấn hay đổi trạng thái xử lý)
+      actionButtonsHtml = `
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-warning text-dark fw-semibold" onclick="openAdminResponseModal(${req.request_id})" title="Điều phối & Phân công nhân sự">
+            <i class="fa-solid fa-sitemap me-1"></i>Điều phối
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li><a class="dropdown-item fw-semibold text-primary" href="javascript:void(0)" onclick="openAdminResponseModal(${req.request_id})"><i class="fa-solid fa-user-check me-2"></i>Điều phối & Giao việc</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="printSupportTicket(${req.request_id})"><i class="fa-solid fa-print me-2 text-secondary"></i>In phiếu yêu cầu</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmDeleteRequest(${req.request_id})"><i class="fa-solid fa-trash me-2"></i>Xóa phiếu yêu cầu</a></li>
+            </ul>
+          </div>
+        </div>
+      `;
+    } else {
+      // Nghiệp vụ của NHÂN VIÊN TƯ VẤN (SUPPORT): Tư vấn & Phản hồi khách hàng, Cập nhật tiến độ xử lý (Không phân công lại hay xóa phiếu)
+      actionButtonsHtml = `
+        <div class="d-flex align-items-center gap-1">
+          <button class="btn btn-sm btn-primary fw-semibold" onclick="openAdminResponseModal(${req.request_id})" title="Tư vấn & Phản hồi khách hàng">
+            <i class="fa-solid fa-reply me-1"></i>Tư vấn
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li><a class="dropdown-item fw-semibold text-primary" href="javascript:void(0)" onclick="openAdminResponseModal(${req.request_id})"><i class="fa-solid fa-headset me-2"></i>Tư vấn & Phản hồi KH</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickChangeStatus(${req.request_id}, 'RESOLVED')"><i class="fa-solid fa-check me-2 text-success"></i>Đánh dấu Đã xử lý</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickChangeStatus(${req.request_id}, 'PROCESSING')"><i class="fa-solid fa-gear me-2 text-info"></i>Chuyển Đang xử lý</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="printSupportTicket(${req.request_id})"><i class="fa-solid fa-print me-2 text-secondary"></i>In phiếu yêu cầu</a></li>
+            </ul>
+          </div>
+        </div>
+      `;
     }
 
     html += `
@@ -263,7 +379,7 @@ function renderRequestsTable(filters = {}) {
           </div>
         </td>
         <td>
-          <div class="small fw-bold text-primary"><i class="fa-solid fa-user-gear me-1 text-secondary"></i>${req.assigned_technician_name || 'Võ Hoàng Nhật'}</div>
+          ${assignedDisplay}
         </td>
         <td>
           ${priorityBadge}
@@ -272,24 +388,7 @@ function renderRequestsTable(filters = {}) {
         <td>${statusBadge}</td>
         <td class="text-center">${ratingDisplay}</td>
         <td>
-          <div class="d-flex align-items-center gap-1">
-            <button class="btn btn-sm btn-primary" onclick="openAdminResponseModal(${req.request_id})" title="Xem chi tiết & Phản hồi">
-              <i class="fa-solid fa-reply"></i>
-            </button>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-ellipsis-vertical"></i>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="openAdminResponseModal(${req.request_id})"><i class="fa-solid fa-eye me-2 text-primary"></i>Xem & Phản hồi</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickChangeStatus(${req.request_id}, 'RESOLVED')"><i class="fa-solid fa-check me-2 text-success"></i>Đánh dấu Đã xử lý</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickChangeStatus(${req.request_id}, 'PROCESSING')"><i class="fa-solid fa-gear me-2 text-info"></i>Chuyển Đang xử lý</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="printSupportTicket(${req.request_id})"><i class="fa-solid fa-print me-2 text-secondary"></i>In phiếu yêu cầu</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="confirmDeleteRequest(${req.request_id})"><i class="fa-solid fa-trash me-2"></i>Xóa phiếu</a></li>
-              </ul>
-            </div>
-          </div>
+          ${actionButtonsHtml}
         </td>
       </tr>
     `;
@@ -298,7 +397,7 @@ function renderRequestsTable(filters = {}) {
   tbody.innerHTML = html;
 }
 
-// 5. Modal Xử lý & Phản hồi yêu cầu (Admin Modal)
+// 5. Modal Điều phối (Admin) hoặc Tư vấn & Phản hồi (Support)
 function openAdminResponseModal(requestId) {
   currentActiveRequestId = requestId;
   const req = DataRepository.getRequestById(requestId);
@@ -307,8 +406,18 @@ function openAdminResponseModal(requestId) {
     return;
   }
 
+  const currentUser = Auth.getCurrentUser();
+  const isStrictAdmin = Auth.isStrictAdmin();
+
   const category = DataRepository.getCategoryById(req.category_id);
   const catName = category ? category.category_name : 'Dịch vụ năng lượng';
+
+  const headerTitleEl = document.getElementById('adminModalHeaderTitle');
+  if (headerTitleEl) {
+    headerTitleEl.textContent = isStrictAdmin
+      ? 'Điều Phối Nhân Sự & Chỉ Đạo Nội Bộ (Nghiệp Vụ Admin)'
+      : 'Tư Vấn Khách Hàng & Cập Nhật Tiến Độ (Nghiệp Vụ Tư Vấn Viên)';
+  }
 
   document.getElementById('adminModalRequestCode').textContent = req.request_code;
   document.getElementById('adminModalCustomerName').textContent = req.customer_name;
@@ -341,14 +450,46 @@ function openAdminResponseModal(requestId) {
     statusContainer.innerHTML = `<span class="status-badge status-pending"><i class="fa-solid fa-hourglass-half"></i> Chưa xử lý</span>`;
   }
 
-  // Chọn trạng thái và kỹ sư phụ trách
-  const statusSelect = document.getElementById('adminResponseStatusSelect');
-  if (statusSelect) {
-    statusSelect.value = req.status === 'PENDING' ? 'RESOLVED' : req.status;
-  }
-  const techSelect = document.getElementById('adminAssignTechSelect');
-  if (techSelect && req.assigned_technician_name) {
-    techSelect.value = req.assigned_technician_name;
+  // Phân tách Panel hiển thị theo đúng Role (ADMIN vs SUPPORT)
+  const adminDispatchPanel = document.getElementById('adminDispatchPanel');
+  const supportReplyPanel = document.getElementById('supportReplyPanel');
+
+  if (isStrictAdmin) {
+    if (adminDispatchPanel) adminDispatchPanel.classList.remove('d-none');
+    if (supportReplyPanel) supportReplyPanel.classList.add('d-none');
+
+    const techSelect = document.getElementById('adminAssignTechSelect');
+    if (techSelect) {
+      techSelect.value = req.assigned_technician_name || 'Ngô Nguyễn Thành Đạt';
+    }
+    const prioSelect = document.getElementById('adminDispatchPrioritySelect');
+    if (prioSelect) {
+      prioSelect.value = req.priority || 'MEDIUM';
+    }
+    const directiveNoteEl = document.getElementById('adminDirectiveNote');
+    if (directiveNoteEl) {
+      directiveNoteEl.value = '';
+    }
+  } else {
+    if (adminDispatchPanel) adminDispatchPanel.classList.add('d-none');
+    if (supportReplyPanel) supportReplyPanel.classList.remove('d-none');
+
+    const statusSelect = document.getElementById('adminResponseStatusSelect');
+    if (statusSelect) {
+      statusSelect.value = req.status === 'PENDING' ? 'RESOLVED' : req.status;
+    }
+    const handlerReadonly = document.getElementById('supportHandlerReadonly');
+    if (handlerReadonly) {
+      handlerReadonly.textContent = req.assigned_technician_name || (currentUser ? currentUser.full_name : 'Ngô Nguyễn Thành Đạt');
+    }
+    const internalCheck = document.getElementById('adminInternalNoteCheck');
+    if (internalCheck) {
+      internalCheck.checked = false;
+    }
+    const responseContentEl = document.getElementById('adminResponseContent');
+    if (responseContentEl) {
+      responseContentEl.value = '';
+    }
   }
 
   // Tệp đính kèm
@@ -362,11 +503,10 @@ function openAdminResponseModal(requestId) {
   }
 
   renderAdminTimeline(req.request_id);
-  document.getElementById('adminResponseContent').value = '';
 
   const modalEl = document.getElementById('adminResponseModal');
   if (window.bootstrap && window.bootstrap.Modal) {
-    const modal = new window.bootstrap.Modal(modalEl);
+    const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
   }
 }
@@ -393,7 +533,7 @@ function renderAdminTimeline(requestId) {
     const isInternal = log.is_internal_note === 1;
     const isCompany = !log.responder_name.includes('Khách hàng');
     const dotClass = isInternal ? 'timeline-dot bg-dark' : isCompany ? 'resolved-dot' : 'client-dot';
-    const noteBadge = isInternal ? '<span class="badge bg-secondary ms-2">Ghi chú nội bộ</span>' : '';
+    const noteBadge = isInternal ? '<span class="badge bg-secondary ms-2">Chỉ đạo / Ghi chú nội bộ</span>' : '';
 
     html += `
       <div class="timeline-item">
@@ -449,22 +589,73 @@ function applyCannedResponse(index) {
 }
 window.applyCannedResponse = applyCannedResponse;
 
-// Gửi phản hồi (MySQL Transaction Atomic ACID Simulation)
+// NGHIỆP VỤ DÀNH RIÊNG CHO ADMIN: Điều phối, phân công nhân sự & ghi chú chỉ đạo nội bộ
+function submitAdminDispatch() {
+  if (!currentActiveRequestId) return;
+
+  const currentUser = Auth.getCurrentUser();
+  if (!Auth.isStrictAdmin()) {
+    Toast.error('Sai phân quyền (RBAC)', 'Chỉ Quản trị viên (Admin) mới có quyền điều phối & phân công nhân sự.');
+    return;
+  }
+
+  const assignedTech = document.getElementById('adminAssignTechSelect').value;
+  const priority = document.getElementById('adminDispatchPrioritySelect').value;
+  const directiveNote = document.getElementById('adminDirectiveNote').value.trim();
+
+  try {
+    const result = DataRepository.dispatchRequestByAdmin(
+      currentActiveRequestId,
+      currentUser,
+      assignedTech,
+      priority,
+      directiveNote
+    );
+
+    Toast.success(
+      'Điều phối & Phân công thành công!',
+      `Phiếu <strong>${result.request.request_code}</strong> đã được giao cho <strong>${assignedTech}</strong> (Mức ưu tiên: <strong>${priority}</strong>).`
+    );
+
+    renderAdminTimeline(currentActiveRequestId);
+    document.getElementById('adminDirectiveNote').value = '';
+
+    renderKPIs();
+    renderCharts();
+    renderRequestsTable();
+    renderSystemLogsTable();
+
+    setTimeout(() => {
+      const modalEl = document.getElementById('adminResponseModal');
+      const modalInstance = window.bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+    }, 1000);
+  } catch (err) {
+    console.error(err);
+    Toast.error('Lỗi phân quyền', err.message);
+  }
+}
+window.submitAdminDispatch = submitAdminDispatch;
+
+// NGHIỆP VỤ DÀNH RIÊNG CHO NHÂN VIÊN TƯ VẤN (SUPPORT): Gửi phản hồi tư vấn khách hàng & cập nhật tiến độ
 function submitAdminResponse() {
   if (!currentActiveRequestId) return;
+
+  const currentUser = Auth.getCurrentUser();
+  if (Auth.isStrictAdmin()) {
+    Toast.error('Giới hạn phân quyền (RBAC)', 'Quản trị viên (Admin) chỉ thực hiện điều phối nhân sự, không trực tiếp gửi phản hồi tư vấn khách hàng.');
+    return;
+  }
 
   const content = document.getElementById('adminResponseContent').value.trim();
   const newStatus = document.getElementById('adminResponseStatusSelect').value;
   const isInternal = document.getElementById('adminInternalNoteCheck').checked ? 1 : 0;
-  const assignedTech = document.getElementById('adminAssignTechSelect').value;
 
   if (!content) {
-    Toast.warning('Nội dung trống', 'Vui lòng nhập nội dung phản hồi giải đáp cho khách hàng.');
+    Toast.warning('Nội dung trống', 'Vui lòng nhập nội dung phản hồi tư vấn giải đáp cho khách hàng.');
     document.getElementById('adminResponseContent').focus();
     return;
   }
-
-  const currentUser = Auth.getCurrentUser();
 
   try {
     const result = DataRepository.addResponseWithStatusUpdate(
@@ -473,12 +664,12 @@ function submitAdminResponse() {
       content,
       newStatus,
       isInternal,
-      assignedTech
+      null
     );
 
     Toast.success(
-      'Gửi phản hồi thành công!',
-      `Đã chuyển trạng thái phiếu <strong>${result.request.request_code}</strong> sang <strong>${newStatus === 'RESOLVED' ? 'Đã xử lý' : 'Đang xử lý'}</strong> và phân công cho <strong>${assignedTech}</strong>.`
+      'Gửi tư vấn thành công!',
+      `Đã gửi phản hồi cho phiếu <strong>${result.request.request_code}</strong> và cập nhật trạng thái sang <strong>${newStatus === 'RESOLVED' ? 'Đã xử lý' : 'Đang xử lý'}</strong>.`
     );
 
     renderAdminTimeline(currentActiveRequestId);
@@ -502,8 +693,14 @@ function submitAdminResponse() {
 }
 window.submitAdminResponse = submitAdminResponse;
 
-// Chuyển nhanh trạng thái từ menu
+// Chuyển nhanh trạng thái từ menu (Chỉ dành cho Nhân viên Tư vấn)
 function quickChangeStatus(requestId, status) {
+  const currentUser = Auth.getCurrentUser();
+  if (Auth.isStrictAdmin()) {
+    Toast.warning('Phân tách nghiệp vụ (RBAC)', 'Việc cập nhật tiến độ xử lý phiếu thuộc thẩm quyền của Nhân viên Tư vấn phụ trách.');
+    return;
+  }
+
   const req = DataRepository.getRequestById(requestId);
   if (!req) return;
 
@@ -512,23 +709,39 @@ function quickChangeStatus(requestId, status) {
     return;
   }
 
-  DataRepository.updateStatus(requestId, status);
-  Toast.info('Cập nhật trạng thái', `Phiếu ${req.request_code} đã chuyển sang: ${status === 'RESOLVED' ? 'Đã xử lý' : 'Đang xử lý'}`);
-  renderKPIs();
-  renderRequestsTable();
+  try {
+    DataRepository.updateStatus(requestId, status, currentUser);
+    Toast.info('Cập nhật tiến độ', `Phiếu ${req.request_code} đã chuyển sang: ${status === 'RESOLVED' ? 'Đã xử lý' : 'Đang xử lý'}`);
+    renderKPIs();
+    renderCharts();
+    renderRequestsTable();
+  } catch (err) {
+    Toast.error('Từ chối thao tác', err.message);
+  }
 }
 window.quickChangeStatus = quickChangeStatus;
 
-// Xóa phiếu
+// Xóa phiếu (Chỉ dành cho Admin)
 function confirmDeleteRequest(requestId) {
+  const currentUser = Auth.getCurrentUser();
+  if (!Auth.isStrictAdmin()) {
+    Toast.error('Từ chối quyền xóa (HTTP 403)', 'Nhân viên Tư vấn không được phép xóa phiếu yêu cầu của khách hàng. Vui lòng liên hệ Admin.');
+    return;
+  }
+
   const req = DataRepository.getRequestById(requestId);
   if (!req) return;
 
   if (confirm(`Bạn có chắc chắn muốn xóa phiếu yêu cầu "${req.request_code} - ${req.title}" khỏi hệ thống không?`)) {
-    DataRepository.deleteRequest(requestId);
-    Toast.success('Đã xóa phiếu', `Phiếu yêu cầu ${req.request_code} đã được loại bỏ.`);
-    renderKPIs();
-    renderRequestsTable();
+    try {
+      DataRepository.deleteRequest(requestId, currentUser);
+      Toast.success('Đã xóa phiếu', `Phiếu yêu cầu ${req.request_code} đã được loại bỏ.`);
+      renderKPIs();
+      renderCharts();
+      renderRequestsTable();
+    } catch (err) {
+      Toast.error('Từ chối thao tác', err.message);
+    }
   }
 }
 window.confirmDeleteRequest = confirmDeleteRequest;
@@ -655,9 +868,9 @@ function renderUsersTable() {
   let html = '';
   users.forEach(u => {
     let roleBadge = '';
-    if (u.role === 'ADMIN') roleBadge = '<span class="badge bg-danger">Quản trị viên (Admin)</span>';
-    else if (u.role === 'SUPPORT') roleBadge = '<span class="badge bg-primary">Nhân viên Support</span>';
-    else roleBadge = '<span class="badge bg-success">Khách hàng (Client)</span>';
+    if (u.role === 'ADMIN') roleBadge = '<span class="badge bg-danger">Quản trị & Điều phối (ADMIN)</span>';
+    else if (u.role === 'SUPPORT') roleBadge = '<span class="badge bg-primary">Nhân viên Tư vấn & Hỗ trợ (SUPPORT)</span>';
+    else roleBadge = '<span class="badge bg-success">Khách hàng (CLIENT)</span>';
 
     html += `
       <tr>
@@ -714,7 +927,7 @@ function exportRequestsToCSV() {
       `"${r.email}"`,
       `"${catName}"`,
       `"${r.title.replace(/"/g, '""')}"`,
-      `"${r.assigned_technician_name || 'Võ Hoàng Nhật'}"`,
+      `"${r.assigned_technician_name || 'Chờ điều phối'}"`,
       `"${r.priority}"`,
       `"${r.status}"`,
       `"${r.rating_score ? r.rating_score + ' sao' : 'Chưa đánh giá'}"`,
@@ -784,8 +997,8 @@ function printSupportTicket(requestId) {
         <tr>
           <th>Nhóm dịch vụ:</th>
           <td>${cat ? cat.category_name : ''}</td>
-          <th>Kỹ sư phụ trách:</th>
-          <td><strong>${req.assigned_technician_name || 'Võ Hoàng Nhật'}</strong></td>
+          <th>Nhân sự phụ trách:</th>
+          <td><strong>${req.assigned_technician_name || 'Chờ Admin điều phối'}</strong></td>
         </tr>
         <tr>
           <th>Mức ưu tiên / SLA:</th>
@@ -832,9 +1045,9 @@ function printSupportTicket(requestId) {
         </div>
         <div class="col-6">
           <div class="fw-bold">ĐẠI DIỆN HOÀNG GIANG SOLAR</div>
-          <div class="small text-muted">(Kỹ thuật viên / Quản trị viên)</div>
+          <div class="small text-muted">(Nhân viên Tư vấn / Kỹ thuật phụ trách)</div>
           <div style="height: 80px;"></div>
-          <div>${req.assigned_technician_name || 'Võ Hoàng Nhật'}</div>
+          <div>${req.assigned_technician_name || 'Ngô Nguyễn Thành Đạt'}</div>
         </div>
       </div>
     </body>
@@ -848,8 +1061,13 @@ function printSupportTicket(requestId) {
 }
 window.printSupportTicket = printSupportTicket;
 
-// 13. Khôi phục dữ liệu gốc
+// 13. Khôi phục dữ liệu gốc (Chỉ dành cho Admin)
 function triggerFactoryReset() {
+  if (!Auth.isStrictAdmin()) {
+    Toast.error('Từ chối quyền hạn (HTTP 403)', 'Chỉ Quản trị viên (Admin) mới được phép khôi phục dữ liệu gốc của hệ thống.');
+    return;
+  }
+
   if (confirm('Khôi phục toàn bộ dữ liệu mẫu ban đầu của Hoàng Giang Solar?\nThao tác này sẽ đặt lại các phiếu yêu cầu, hồ sơ thiết bị và nhật ký theo đúng file báo cáo tốt nghiệp.')) {
     DataRepository.resetData();
     Toast.success('Đã khôi phục', 'Dữ liệu hệ thống đã được thiết lập lại về mặc định.');

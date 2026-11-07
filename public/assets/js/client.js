@@ -171,6 +171,13 @@ function handleFormSubmit(e) {
     return;
   }
 
+  // Xác thực Cloudflare Turnstile Captcha
+  const turnstileInput = document.querySelector('#requestForm [name="cf-turnstile-response"]');
+  if (window.turnstile && turnstileInput && !turnstileInput.value) {
+    Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi gửi yêu cầu.');
+    return;
+  }
+
   const btnSubmit = document.getElementById('btnSubmitRequest');
   if (btnSubmit) {
     btnSubmit.disabled = true;
@@ -201,6 +208,11 @@ function handleFormSubmit(e) {
       document.getElementById('requestContent').value = '';
       document.getElementById('serviceCategory').value = '';
       removeAttachment();
+
+      // Reset Cloudflare Turnstile sau khi gửi thành công
+      if (window.turnstile) {
+        try { turnstile.reset(); } catch (err) {}
+      }
 
       loadMyRequests();
 
@@ -303,7 +315,7 @@ function loadMyRequests(statusFilter = 'ALL') {
           <div class="text-muted small mb-2 d-flex flex-wrap align-items-center gap-2">
             <span><i class="fa-solid ${catIcon} text-secondary me-1"></i>${catName}</span>
             <span>•</span>
-            <span><i class="fa-solid fa-user-gear me-1 text-primary"></i>Kỹ sư: <strong>${req.assigned_technician_name || 'Võ Hoàng Nhật'}</strong></span>
+            <span><i class="fa-solid fa-user-gear me-1 text-primary"></i>Nhân sự xử lý: <strong>${req.assigned_technician_name || 'Chờ Admin điều phối'}</strong></span>
             <span>•</span>
             <span><i class="fa-solid fa-location-dot me-1"></i>${req.address || 'Tại công trình'}</span>
           </div>
@@ -346,7 +358,7 @@ function viewClientRequestDetail(requestId) {
   document.getElementById('modalRequestTime').textContent = req.created_at;
   document.getElementById('modalRequestContent').textContent = req.content;
   document.getElementById('modalCustomerAddress').textContent = req.address || 'Không ghi rõ';
-  document.getElementById('modalTechnicianName').textContent = req.assigned_technician_name || 'Võ Hoàng Nhật (Phụ trách)';
+  document.getElementById('modalTechnicianName').textContent = req.assigned_technician_name || 'Chờ Admin điều phối';
   document.getElementById('modalSlaDeadline').textContent = req.sla_deadline ? `Trước: ${req.sla_deadline}` : 'Trong 24h';
 
   // Trạng thái badge

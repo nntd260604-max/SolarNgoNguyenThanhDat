@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Style -->
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- Cloudflare Turnstile Captcha API -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     .auth-page-wrapper {
       min-height: 100vh;
@@ -160,6 +162,11 @@
                 <label class="form-check-label small text-muted" for="rememberMe">Duy trì trạng thái đăng nhập</label>
               </div>
 
+              <!-- Cloudflare Turnstile Captcha (Đăng Nhập) -->
+              <div class="mb-3 text-center">
+                <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
+              </div>
+
               <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold mb-3">
                 <i class="fa-solid fa-right-to-bracket me-2"></i> Đăng Nhập Vào Hệ Thống
               </button>
@@ -171,13 +178,13 @@
                 <i class="fa-solid fa-bolt text-warning me-1"></i> Đăng nhập nhanh tài khoản mẫu (Demo):
               </div>
               <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="Auth.quickLogin('ADMIN')" title="Võ Hoàng Nhật - Admin">
-                  <i class="fa-solid fa-user-shield me-1"></i> Admin (Võ Hoàng Nhật)
+                <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="Auth.quickLogin('ADMIN')" title="Võ Hoàng Nhật - Quản trị hệ thống & Điều phối nhân sự">
+                  <i class="fa-solid fa-user-shield me-1"></i> Admin Điều Phối (Hoàng Nhật)
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="Auth.quickLogin('SUPPORT')" title="Ngô Nguyễn Thành Đạt - Support">
-                  <i class="fa-solid fa-headset me-1"></i> Support (Thành Đạt)
+                <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="Auth.quickLogin('SUPPORT')" title="Ngô Nguyễn Thành Đạt - Nhân viên Tư vấn & Xử lý yêu cầu KH">
+                  <i class="fa-solid fa-headset me-1"></i> NV Tư Vấn (Thành Đạt)
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="Auth.quickLogin('CLIENT')" title="Nguyễn Văn An - Khách hàng">
+                <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="Auth.quickLogin('CLIENT')" title="Nguyễn Văn An - Khách hàng gửi yêu cầu">
                   <i class="fa-solid fa-user me-1"></i> Khách hàng (Văn An)
                 </button>
               </div>
@@ -227,6 +234,11 @@
                 <label class="form-check-label text-muted" for="regAgree">
                   Tôi đồng ý với chính sách xử lý thông tin chăm sóc khách hàng của Hoàng Giang Solar.
                 </label>
+              </div>
+
+              <!-- Cloudflare Turnstile Captcha (Đăng Ký) -->
+              <div class="mb-3 text-center">
+                <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
               </div>
 
               <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold">
@@ -282,6 +294,13 @@
         return;
       }
 
+      // Xác minh Cloudflare Turnstile Captcha
+      const turnstileResp = document.querySelector('#loginForm [name="cf-turnstile-response"]');
+      if (window.turnstile && turnstileResp && !turnstileResp.value) {
+        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi đăng nhập.');
+        return;
+      }
+
       const res = Auth.login(identifier, password);
       if (res.success) {
         Toast.success('Đăng nhập thành công!', `Xin chào <strong>${res.user.full_name}</strong>.`);
@@ -321,6 +340,13 @@
 
       if (password !== confirm) {
         Toast.warning('Không trùng khớp', 'Mật khẩu và xác nhận mật khẩu không khớp nhau.');
+        return;
+      }
+
+      // Xác minh Cloudflare Turnstile Captcha
+      const turnstileResp = document.querySelector('#registerForm [name="cf-turnstile-response"]');
+      if (window.turnstile && turnstileResp && !turnstileResp.value) {
+        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi đăng ký tài khoản.');
         return;
       }
 

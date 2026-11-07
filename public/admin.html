@@ -24,7 +24,7 @@
         <img src="assets/images/logo.png" alt="Logo" onerror="this.src='https://placehold.co/120x40/FFFFFF/0F3E6D?text=HGS'">
         <div>
           <div class="fw-bold leading-none fs-6 text-warning">HOÀNG GIANG</div>
-          <div class="small opacity-75" style="font-size: 0.75rem;">Support Admin v2.0</div>
+          <div class="small opacity-75" style="font-size: 0.75rem;" id="adminSidebarSubtitle">Support Admin v2.0</div>
         </div>
       </div>
 
@@ -38,7 +38,7 @@
         <li class="admin-menu-item">
           <a href="#requestsSection" class="admin-menu-link" onclick="switchAdminTab('requests', this)">
             <i class="fa-solid fa-ticket"></i>
-            <span>Quản Lý Yêu Cầu</span>
+            <span id="menuRequestsLabel">Quản Lý Yêu Cầu</span>
           </a>
         </li>
         <li class="admin-menu-item">
@@ -53,19 +53,19 @@
             <span>Mã Lỗi Inverter & KB</span>
           </a>
         </li>
-        <li class="admin-menu-item">
+        <li class="admin-menu-item admin-only-menu">
           <a href="#categoriesSection" class="admin-menu-link" onclick="switchAdminTab('categories', this)">
             <i class="fa-solid fa-list-check"></i>
             <span>Danh Mục Dịch Vụ</span>
           </a>
         </li>
-        <li class="admin-menu-item">
+        <li class="admin-menu-item admin-only-menu">
           <a href="#usersSection" class="admin-menu-link" onclick="switchAdminTab('users', this)">
             <i class="fa-solid fa-users-gear"></i>
             <span>Tài Khoản & Quyền</span>
           </a>
         </li>
-        <li class="admin-menu-item">
+        <li class="admin-menu-item admin-only-menu">
           <a href="#logsSection" class="admin-menu-link" onclick="switchAdminTab('logs', this)">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>Nhật Ký Phản Hồi</span>
@@ -121,8 +121,8 @@
           <button class="btn btn-outline-success btn-sm" onclick="exportRequestsToCSV()" title="Xuất báo cáo sang Excel/CSV">
             <i class="fa-solid fa-file-excel me-1"></i> Xuất Excel
           </button>
-          <!-- Nút Reset dữ liệu gốc -->
-          <button class="btn btn-outline-secondary btn-sm" onclick="triggerFactoryReset()" title="Khôi phục dữ liệu ban đầu theo báo cáo">
+          <!-- Nút Reset dữ liệu gốc (Chỉ Admin) -->
+          <button id="btnFactoryReset" class="btn btn-outline-secondary btn-sm admin-only-btn" onclick="triggerFactoryReset()" title="Khôi phục dữ liệu ban đầu theo báo cáo">
             <i class="fa-solid fa-rotate-left me-1"></i> Reset Mẫu
           </button>
         </div>
@@ -130,6 +130,9 @@
 
       <!-- Content Container -->
       <div class="admin-content">
+
+        <!-- RBAC Role & Business Separation Banner -->
+        <div id="rbacRoleBanner" class="mb-3"></div>
 
         <!-- TAB 1: BẢNG ĐIỀU KHIỂN & BIỂU ĐỒ (DASHBOARD) -->
         <div id="tab-dashboard" class="admin-tab-pane">
@@ -315,11 +318,11 @@
                   <th style="width: 160px;">Khách Hàng</th>
                   <th style="width: 170px;">Dịch Vụ</th>
                   <th>Tiêu Đề & Nội Dung</th>
-                  <th style="width: 140px;">Kỹ Sư Phụ Trách</th>
+                  <th style="width: 150px;">Nhân Sự Phụ Trách</th>
                   <th style="width: 110px;">Ưu Tiên / SLA</th>
                   <th style="width: 130px;">Trạng Thái</th>
                   <th style="width: 90px;">Đánh Giá</th>
-                  <th style="width: 90px;">Thao Tác</th>
+                  <th style="width: 120px;">Nghiệp Vụ</th>
                 </tr>
               </thead>
               <tbody id="adminRequestsTbody">
@@ -334,7 +337,7 @@
           <div class="hgs-card">
             <div class="hgs-card-header d-flex justify-content-between align-items-center">
               <h5 class="hgs-card-title"><i class="fa-solid fa-shield-halved text-secondary"></i> Quản Lý Thiết Bị Lắp Đặt & Thời Hạn Bảo Hành Chính Hãng</h5>
-              <button class="btn btn-sm btn-primary" onclick="alert('Tính năng thêm hồ sơ thiết bị mới đang được liên kết với phòng Dự án.');">
+              <button class="btn btn-sm btn-primary admin-only-btn" onclick="alert('Tính năng thêm hồ sơ thiết bị mới đang được liên kết với phòng Dự án.');">
                 <i class="fa-solid fa-plus me-1"></i> Thêm Thiết Bị Mới
               </button>
             </div>
@@ -464,7 +467,7 @@
         <div class="modal-header bg-primary text-white py-3">
           <div class="d-flex align-items-center gap-2">
             <span class="badge bg-warning text-dark font-monospace fs-6" id="adminModalRequestCode">HGS-2026-001</span>
-            <span class="fw-bold fs-5">Xử Lý & Phản Hồi Yêu Cầu Hỗ Trợ</span>
+            <span class="fw-bold fs-5" id="adminModalHeaderTitle">Xử Lý & Phản Hồi Yêu Cầu Hỗ Trợ</span>
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -518,10 +521,62 @@
             <div id="adminModalTimeline"></div>
           </div>
 
-          <!-- Form Soạn Thảo Phản Hồi (ACID Transaction) -->
-          <div class="p-3 border-top bg-light rounded-3">
+          <!-- PANEL 1: NGHIỆP VỤ ĐIỀU PHỐI & PHÂN CÔNG (CHỈ DÀNH CHO ADMIN) -->
+          <div id="adminDispatchPanel" class="p-3 border rounded-3 bg-primary-subtle bg-opacity-25 mb-2 d-none">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-bold text-primary mb-0"><i class="fa-solid fa-pen-to-square me-1"></i> Soạn Thảo Phản Hồi / Hướng Dẫn Kỹ Thuật:</h6>
+              <h6 class="fw-bold text-primary mb-0">
+                <i class="fa-solid fa-sitemap me-1 text-warning"></i> Nghiệp Vụ Admin: Điều Phối, Phân Công Nhân Sự & Chỉ Đạo Nội Bộ
+              </h6>
+              <span class="badge bg-danger">Quyền Admin Điều Phối</span>
+            </div>
+
+            <div class="alert alert-warning py-2 px-3 small mb-3 border-warning">
+              <i class="fa-solid fa-shield-halved me-1"></i>
+              <strong>Phân tách nghiệp vụ (RBAC):</strong> Tài khoản <strong>Quản trị viên (Admin)</strong> chỉ thực hiện <em>điều phối nhân viên phụ trách, thiết lập mức ưu tiên SLA và ghi chú chỉ đạo nội bộ</em>. Nghiệp vụ tư vấn giải đáp trực tiếp cho khách hàng và cập nhật tiến độ xử lý thuộc về <strong>Nhân viên Tư vấn & Hỗ trợ</strong>.
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                  <i class="fa-solid fa-user-check me-1 text-primary"></i>Phân công nhân viên tư vấn / kỹ thuật:
+                </label>
+                <select id="adminAssignTechSelect" class="form-select form-select-sm border-primary">
+                  <option value="Ngô Nguyễn Thành Đạt" selected>Ngô Nguyễn Thành Đạt (Chuyên viên Tư vấn & Khảo sát)</option>
+                  <option value="Trần Quốc Tuấn">Trần Quốc Tuấn (Kỹ sư Inverter & Tủ điện)</option>
+                  <option value="Lê Văn Dũng">Lê Văn Dũng (Kỹ thuật Bảo trì Pin & Camera)</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                  <i class="fa-solid fa-bolt me-1 text-warning"></i>Thiết lập mức độ ưu tiên & Hạn SLA:
+                </label>
+                <select id="adminDispatchPrioritySelect" class="form-select form-select-sm">
+                  <option value="URGENT">Khẩn cấp (Cam kết SLA 4 giờ)</option>
+                  <option value="HIGH">Ưu tiên cao (Cam kết SLA 24 giờ)</option>
+                  <option value="MEDIUM" selected>Bình thường (Cam kết SLA 48 giờ)</option>
+                  <option value="LOW">Thấp (Cam kết SLA 72 giờ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark mb-1">
+                <i class="fa-solid fa-lock me-1 text-secondary"></i>Ghi chú chỉ đạo nội bộ cho nhân viên phụ trách (Khách hàng không nhìn thấy):
+              </label>
+              <textarea id="adminDirectiveNote" class="form-control form-control-sm" rows="3" placeholder="Nhập yêu cầu chỉ đạo nội bộ cho nhân viên tư vấn/kỹ thuật (VD: Ưu tiên liên hệ khách trước 10h sáng, kiểm tra kỹ thông số bảo hành...)"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary w-100 py-2 rounded-3 fw-bold" onclick="submitAdminDispatch()">
+              <i class="fa-solid fa-user-check me-2"></i> Xác Nhận Điều Phối & Giao Việc Cho Nhân Viên
+            </button>
+          </div>
+
+          <!-- PANEL 2: NGHIỆP VỤ TƯ VẤN KHÁCH HÀNG & XỬ LÝ KỸ THUẬT (CHỈ DÀNH CHO NHÂN VIÊN TƯ VẤN - SUPPORT) -->
+          <div id="supportReplyPanel" class="p-3 border-top bg-light rounded-3 d-none">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-primary mb-0">
+                <i class="fa-solid fa-headset me-1 text-success"></i> Nghiệp Vụ Tư Vấn Viên: Phản Hồi Khách Hàng & Cập Nhật Tiến Độ
+              </h6>
               <!-- Mẫu câu trả lời nhanh -->
               <div class="dropdown">
                 <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -533,27 +588,23 @@
               </div>
             </div>
 
-            <textarea id="adminResponseContent" class="form-control mb-3" rows="4" placeholder="Nhập câu trả lời giải đáp, báo giá hoặc thông báo lịch kiểm tra của kỹ thuật viên..."></textarea>
+            <textarea id="adminResponseContent" class="form-control mb-3" rows="4" placeholder="Nhập câu trả lời tư vấn giải đáp, báo giá hoặc thông báo kết quả xử lý kỹ thuật gửi tới khách hàng..."></textarea>
 
             <div class="row g-2 align-items-center mb-3">
-              <div class="col-sm-4">
-                <label class="form-label small fw-semibold mb-1">Cập nhật trạng thái:</label>
+              <div class="col-sm-5">
+                <label class="form-label small fw-semibold mb-1">Cập nhật tiến độ xử lý:</label>
                 <select id="adminResponseStatusSelect" class="form-select form-select-sm">
-                  <option value="RESOLVED" selected>Đã xử lý (Hoàn tất phản hồi)</option>
-                  <option value="PROCESSING">Đang xử lý (Kỹ thuật kiểm tra)</option>
-                  <option value="PENDING">Chưa xử lý (Giữ nguyên)</option>
+                  <option value="RESOLVED" selected>Đã xử lý (Hoàn tất tư vấn / khắc phục)</option>
+                  <option value="PROCESSING">Đang xử lý (Đang khảo sát / kiểm tra)</option>
                 </select>
               </div>
               <div class="col-sm-4">
-                <label class="form-label small fw-semibold mb-1">Phân công kỹ sư phụ trách:</label>
-                <select id="adminAssignTechSelect" class="form-select form-select-sm">
-                  <option value="Võ Hoàng Nhật">Võ Hoàng Nhật (Kỹ sư trưởng)</option>
-                  <option value="Ngô Nguyễn Thành Đạt" selected>Ngô Nguyễn Thành Đạt (Khảo sát & Support)</option>
-                  <option value="Trần Quốc Tuấn">Trần Quốc Tuấn (Sửa Inverter/Tủ điện)</option>
-                  <option value="Lê Văn Dũng">Lê Văn Dũng (Bảo trì pin & Camera)</option>
-                </select>
+                <label class="form-label small fw-semibold mb-1">Nhân sự xử lý phiếu:</label>
+                <div class="form-control form-control-sm bg-white text-primary fw-bold text-truncate" id="supportHandlerReadonly">
+                  Ngô Nguyễn Thành Đạt
+                </div>
               </div>
-              <div class="col-sm-4">
+              <div class="col-sm-3">
                 <div class="form-check mt-sm-4">
                   <input class="form-check-input" type="checkbox" id="adminInternalNoteCheck">
                   <label class="form-check-label small text-muted" for="adminInternalNoteCheck">
@@ -564,7 +615,7 @@
             </div>
 
             <button type="button" class="btn btn-solar w-100 py-2 rounded-3 fw-bold" onclick="submitAdminResponse()">
-              <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận Gửi Phản Hồi & Cập Nhật Hệ Thống
+              <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận Gửi Tư Vấn Khách Hàng & Cập Nhật Tiến Độ
             </button>
           </div>
         </div>
@@ -587,14 +638,27 @@
   <script src="assets/js/admin.js"></script>
   <script>
     function switchAdminTab(tabKey, linkEl) {
+      const adminOnlyTabs = ['categories', 'users', 'logs'];
+      if (adminOnlyTabs.includes(tabKey) && window.Auth && !Auth.isStrictAdmin()) {
+        if (window.Toast) {
+          Toast.error('Từ chối truy cập (HTTP 403)', 'Chức năng quản trị hệ thống này chỉ dành riêng cho Quản trị viên (Admin).');
+        }
+        return;
+      }
+
       document.querySelectorAll('.admin-menu-link').forEach(l => l.classList.remove('active'));
       if (linkEl) linkEl.classList.add('active');
 
       document.querySelectorAll('.admin-tab-pane').forEach(p => p.classList.add('d-none'));
 
+      const isStrictAdmin = window.Auth && Auth.isStrictAdmin();
       const headings = {
-        dashboard: '<i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng Điều Khiển Tiếp Nhận Yêu Cầu',
-        requests: '<i class="fa-solid fa-ticket me-2 text-warning"></i>Quản Lý & Phản Hồi Yêu Cầu Hỗ Trợ',
+        dashboard: isStrictAdmin
+          ? '<i class="fa-solid fa-gauge me-2 text-warning"></i>Bảng Điều Khiển Quản Trị & Điều Phối Hệ Thống'
+          : '<i class="fa-solid fa-headset me-2 text-warning"></i>Bàn Làm Việc Nhân Viên Tư Vấn & Hỗ Trợ Kỹ Thuật',
+        requests: isStrictAdmin
+          ? '<i class="fa-solid fa-sitemap me-2 text-warning"></i>Điều Phối & Phân Công Phiếu Yêu Cầu Khách Hàng (Nghiệp Vụ Admin)'
+          : '<i class="fa-solid fa-comments me-2 text-warning"></i>Xử Lý & Tư Vấn Phiếu Yêu Cầu Được Phân Công (Nghiệp Vụ Tư Vấn Viên)',
         equipment: '<i class="fa-solid fa-shield-halved me-2 text-success"></i>Hồ Sơ Thiết Bị & Quản Lý Bảo Hành Chính Hãng',
         kb: '<i class="fa-solid fa-book-bookmark me-2 text-danger"></i>Thư Viện Tra Cứu Mã Lỗi Biến Tần & Camera',
         categories: '<i class="fa-solid fa-list-check me-2 text-warning"></i>Quản Lý Danh Mục Nhóm Dịch Vụ',

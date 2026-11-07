@@ -235,25 +235,18 @@
   ],
   "technicians": [
     {
-      "tech_id": 1,
-      "name": "Võ Hoàng Nhật",
-      "role": "Kỹ sư Trưởng Điện Mặt Trời",
-      "phone": "0913704141",
-      "specialty": "Biến tần Solis & Deye, Tủ điện Hybrid"
-    },
-    {
       "tech_id": 2,
       "name": "Ngô Nguyễn Thành Đạt",
-      "role": "Chuyên viên Hỗ trợ & Khảo sát",
+      "role": "Nhân viên Tư vấn & Hỗ trợ KH",
       "phone": "0918765432",
-      "specialty": "Khảo sát công trình, Báo giá, Tiếp nhận hệ thống"
+      "specialty": "Tư vấn giải pháp, Báo giá, Hỗ trợ kỹ thuật từ xa"
     },
     {
       "tech_id": 3,
       "name": "Trần Quốc Tuấn",
-      "role": "Kỹ thuật viên Sửa chữa",
+      "role": "Kỹ thuật viên Sửa chữa Inverter",
       "phone": "0977222333",
-      "specialty": "Xử lý lỗi biến tần, Sửa mạch điện, Thay thế linh kiện"
+      "specialty": "Xử lý lỗi biến tần Solis/Deye, Sửa mạch điện"
     },
     {
       "tech_id": 4,
@@ -278,15 +271,15 @@
       "priority": "HIGH",
       "status": "RESOLVED",
       "attachment_url": "assets/images/solar_fields.jpeg",
-      "assigned_to": 1,
-      "assigned_technician_name": "Võ Hoàng Nhật",
+      "assigned_to": 2,
+      "assigned_technician_name": "Ngô Nguyễn Thành Đạt",
       "sla_deadline": "2026-10-16 08:30:00",
       "sla_status": "IN_SLA",
       "rating_score": 5,
       "rating_comment": "Dịch vụ xử lý biến tần Solis rất nhanh và chuyên nghiệp.",
-      "rated_at": "2026-11-03 10:43:12",
+      "rated_at": "2026-11-07 02:40:10",
       "created_at": "2026-10-15 08:30:00",
-      "updated_at": "2026-11-03 10:43:12"
+      "updated_at": "2026-11-07 02:40:10"
     },
     {
       "request_id": 2,
@@ -368,8 +361,8 @@
       "priority": "MEDIUM",
       "status": "PENDING",
       "attachment_url": null,
-      "assigned_to": 1,
-      "assigned_technician_name": "Võ Hoàng Nhật",
+      "assigned_to": null,
+      "assigned_technician_name": null,
       "sla_deadline": "2026-10-28 16:45:00",
       "sla_status": "IN_SLA",
       "created_at": "2026-10-26 16:45:00",
@@ -381,30 +374,41 @@
       "response_id": 1,
       "request_id": 1,
       "responder_id": 1,
-      "responder_name": "Võ Hoàng Nhật (Quản trị viên / Trưởng bộ phận KT)",
-      "response_content": "Chào anh An, Kỹ thuật viên Hoàng Giang Solar đã gọi điện kiểm tra từ xa. Lỗi đèn Alarm đỏ do đứt kết nối cáp DC ngõ vào và Wi-Fi router nhà anh đổi mật khẩu. Kỹ thuật viên đã đến công trình xử lý bấm lại đầu nối MC4 và cài lại mạng Wi-Fi lúc 11h30. Hiện hệ thống đã phát điện bình thường công suất 4.8kW.",
+      "responder_name": "Võ Hoàng Nhật (Admin Điều phối)",
+      "response_content": "[Lệnh điều phối nội bộ]: Phân công nhân viên Ngô Nguyễn Thành Đạt tiếp nhận và hỗ trợ khách hàng Nguyễn Văn An kiểm tra lỗi đèn Alarm đỏ biến tần Solis 5kW trong hạn SLA 24h.",
+      "previous_status": "PENDING",
+      "new_status": "PENDING",
+      "is_internal_note": 1,
+      "created_at": "2026-10-15 08:45:00"
+    },
+    {
+      "response_id": 2,
+      "request_id": 1,
+      "responder_id": 2,
+      "responder_name": "Ngô Nguyễn Thành Đạt (Nhân viên Tư vấn & Hỗ trợ)",
+      "response_content": "Chào anh An, bộ phận Hỗ trợ Hoàng Giang Solar đã gọi điện kiểm tra từ xa. Lỗi đèn Alarm đỏ do lỏng kết nối cáp DC ngõ vào và Wi-Fi router nhà anh đổi mật khẩu. Đã xử lý bấm lại đầu nối MC4 và cài lại mạng Wi-Fi lúc 11h30. Hiện hệ thống đã phát điện bình thường công suất 4.8kW.",
       "previous_status": "PENDING",
       "new_status": "RESOLVED",
       "is_internal_note": 0,
       "created_at": "2026-10-15 11:45:00"
     },
     {
-      "response_id": 2,
+      "response_id": 3,
       "request_id": 2,
       "responder_id": 2,
-      "responder_name": "Ngô Nguyễn Thành Đạt (Hỗ trợ viên / Tư vấn giải pháp)",
-      "response_content": "Kính chào chị Bích, Phòng Kinh doanh Hoàng Giang Solar đã gửi chi tiết bảng dự toán hệ thống Hybrid 10kW sử dụng Biến tần Deye 10kW 3 pha và 2 pack Pin Lithium Deye 5.12kWh qua email tranthibich@gmail.com. Đã liên hệ Zalo giải thích các hạng mục bảo hành 5 năm cho Inverter và 10 năm cho pin lưu trữ. Chị kiểm tra hòm thư nhé ạ.",
+      "responder_name": "Ngô Nguyễn Thành Đạt (Nhân viên Tư vấn & Hỗ trợ)",
+      "response_content": "Kính chào chị Bích, bộ phận Tư vấn Hoàng Giang Solar đã gửi chi tiết bảng dự toán hệ thống Hybrid 10kW sử dụng Biến tần Deye 10kW 3 pha và 2 pack Pin Lithium Deye 5.12kWh qua email tranthibich@gmail.com. Đã liên hệ Zalo giải thích các hạng mục bảo hành 5 năm cho Inverter và 10 năm cho pin lưu trữ. Chị kiểm tra hòm thư nhé ạ.",
       "previous_status": "PENDING",
       "new_status": "RESOLVED",
       "is_internal_note": 0,
       "created_at": "2026-10-18 14:30:00"
     },
     {
-      "response_id": 3,
+      "response_id": 4,
       "request_id": 3,
-      "responder_id": 1,
-      "responder_name": "Võ Hoàng Nhật (Quản trị viên / Trưởng bộ phận KT)",
-      "response_content": "Chào anh Minh, công ty đã tiếp nhận yêu cầu bảo dưỡng 40 tấm pin nhà xưởng. Đội kỹ thuật thi công đã sắp xếp lịch vào thứ Bảy ngày 28/10 lúc 8h00 sáng. Đội ngũ gồm 2 kỹ thuật viên mang theo chổi xoay chuyên dụng và máy bơm áp lực thấp an toàn cho tấm pin. Xin cảm ơn anh!",
+      "responder_id": 4,
+      "responder_name": "Lê Văn Dũng (Kỹ thuật viên Bảo trì)",
+      "response_content": "Chào anh Minh, đội bảo trì đã tiếp nhận yêu cầu vệ sinh 40 tấm pin nhà xưởng. Đội kỹ thuật thi công đã sắp xếp lịch vào thứ Bảy ngày 28/10 lúc 8h00 sáng mang theo chổi xoay chuyên dụng và máy bơm áp lực thấp an toàn cho tấm pin. Xin cảm ơn anh!",
       "previous_status": "PENDING",
       "new_status": "PROCESSING",
       "is_internal_note": 0,

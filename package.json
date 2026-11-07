@@ -4,6 +4,7 @@
   "description": "Website & Hệ thống Quản lý Hỗ trợ Khách hàng - Công ty TNHH TM DV Hoàng Giang Solar",
   "private": true,
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.6.3",
     "cors": "^2.8.5",
     "express": "^4.19.2"
   }
