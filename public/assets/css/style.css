@@ -804,5 +804,125 @@ body {
   }
 }
 
+/* ==========================================================================
+   Cloudflare Turnstile & Interactive Security Captcha Box
+   ========================================================================== */
+.hgs-captcha-slot {
+  display: block;
+  margin: 1rem 0;
+}
+
+.hgs-captcha-wrapper {
+  background: #F9FAFB;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 74px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  user-select: none;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.hgs-captcha-wrapper:hover {
+  border-color: #9CA3AF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hgs-captcha-wrapper.error {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+  animation: hgsShake 0.4s ease-in-out;
+}
+
+.hgs-captcha-wrapper.verified {
+  border-color: #10B981 !important;
+  background-color: #F0FDF4 !important;
+}
+
+@keyframes hgsShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.hgs-captcha-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.hgs-captcha-checkbox-box {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #9CA3AF;
+  border-radius: 6px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.hgs-captcha-checkbox-box:hover {
+  border-color: #0F3E6D;
+  background: #F8FAFC;
+}
+
+.hgs-captcha-checkbox-box.checked {
+  border-color: #10B981 !important;
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+}
+
+.hgs-captcha-checkbox-box.loading {
+  border-color: #0284C7 !important;
+  background: #F0F9FF !important;
+}
+
+.hgs-captcha-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid #0284C7;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: hgsSpin 0.7s linear infinite;
+}
+
+@keyframes hgsSpin {
+  to { transform: rotate(360deg); }
+}
+
+.hgs-captcha-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1F2937;
+  line-height: 1.25;
+}
+
+.hgs-captcha-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-left: 12px;
+  border-left: 1px solid #E5E7EB;
+}
+
+.hgs-captcha-subtext {
+  font-size: 0.65rem;
+  color: #6B7280;
+  line-height: 1.15;
+  margin-top: 2px;
+}
+
+
 
 

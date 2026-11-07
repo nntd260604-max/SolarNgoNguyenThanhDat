@@ -552,10 +552,10 @@
                   <textarea id="quickContent" class="form-control" rows="3" placeholder="Mô tả số tiền điện hàng tháng, diện tích mái tôn/mái bằng hoặc thắc mắc của bạn..." required></textarea>
                 </div>
                 <!-- Cloudflare Turnstile Captcha -->
-                <div class="col-12 text-center my-2">
-                  <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
+                <div class="col-12">
+                  <div class="hgs-captcha-slot" id="captchaQuickForm"></div>
                 </div>
-                <div class="col-12 text-center mt-3">
+                <div class="col-12 text-center mt-2">
                   <button type="submit" class="btn btn-solar btn-lg px-5 rounded-pill">
                     <i class="fa-solid fa-paper-plane me-2"></i> Gửi Yêu Cầu Cho Hoàng Giang Solar
                   </button>
@@ -625,6 +625,7 @@
   <script src="assets/js/toast.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/captcha.js"></script>
   <script src="assets/js/chatbot.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -770,9 +771,7 @@
       }
 
       // Xác minh Cloudflare Turnstile Captcha
-      const turnstileResp = document.querySelector('#quickForm [name="cf-turnstile-response"]');
-      if (window.turnstile && turnstileResp && !turnstileResp.value) {
-        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm an toàn (Cloudflare Turnstile) trước khi gửi yêu cầu.');
+      if (window.HgsCaptcha && !HgsCaptcha.isVerified(document.getElementById('quickForm'))) {
         return;
       }
 
@@ -792,8 +791,8 @@
 
       Toast.success('Đã gửi yêu cầu!', `Cảm ơn bạn. Mã phiếu: <strong>${newReq.request_code}</strong>. Kỹ sư Hoàng Giang Solar sẽ sớm liên hệ tư vấn!`);
       document.getElementById('quickForm').reset();
-      if (window.turnstile) {
-        try { turnstile.reset(); } catch (err) {}
+      if (window.HgsCaptcha) {
+        HgsCaptcha.reset(document.getElementById('quickForm'));
       }
     }
   </script>

@@ -163,9 +163,7 @@
               </div>
 
               <!-- Cloudflare Turnstile Captcha (Đăng Nhập) -->
-              <div class="mb-3 text-center">
-                <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
-              </div>
+              <div class="hgs-captcha-slot" id="captchaLoginForm"></div>
 
               <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold mb-3">
                 <i class="fa-solid fa-right-to-bracket me-2"></i> Đăng Nhập Vào Hệ Thống
@@ -237,9 +235,7 @@
               </div>
 
               <!-- Cloudflare Turnstile Captcha (Đăng Ký) -->
-              <div class="mb-3 text-center">
-                <div class="cf-turnstile d-inline-block" data-sitekey="0x4AAAAAAAF3BxRIBOEDAaZTZ" data-theme="light"></div>
-              </div>
+              <div class="hgs-captcha-slot" id="captchaRegisterForm"></div>
 
               <button type="submit" class="btn btn-solar w-100 py-2 rounded-3 fw-bold">
                 <i class="fa-solid fa-user-plus me-2"></i> Đăng Ký Tài Khoản Mới
@@ -259,6 +255,7 @@
   <script src="assets/js/toast.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/captcha.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Check if URL has tab=register
@@ -295,9 +292,7 @@
       }
 
       // Xác minh Cloudflare Turnstile Captcha
-      const turnstileResp = document.querySelector('#loginForm [name="cf-turnstile-response"]');
-      if (window.turnstile && turnstileResp && !turnstileResp.value) {
-        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi đăng nhập.');
+      if (window.HgsCaptcha && !HgsCaptcha.isVerified(document.getElementById('loginForm'))) {
         return;
       }
 
@@ -344,9 +339,7 @@
       }
 
       // Xác minh Cloudflare Turnstile Captcha
-      const turnstileResp = document.querySelector('#registerForm [name="cf-turnstile-response"]');
-      if (window.turnstile && turnstileResp && !turnstileResp.value) {
-        Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi đăng ký tài khoản.');
+      if (window.HgsCaptcha && !HgsCaptcha.isVerified(document.getElementById('registerForm'))) {
         return;
       }
 

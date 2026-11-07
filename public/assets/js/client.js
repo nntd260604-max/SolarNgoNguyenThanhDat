@@ -172,9 +172,7 @@ function handleFormSubmit(e) {
   }
 
   // Xác thực Cloudflare Turnstile Captcha
-  const turnstileInput = document.querySelector('#requestForm [name="cf-turnstile-response"]');
-  if (window.turnstile && turnstileInput && !turnstileInput.value) {
-    Toast.warning('Bảo vệ chống Spam', 'Vui lòng xác minh hộp kiểm bảo mật (Cloudflare Turnstile) trước khi gửi yêu cầu.');
+  if (window.HgsCaptcha && !HgsCaptcha.isVerified(document.getElementById('requestForm'))) {
     return;
   }
 
@@ -210,8 +208,8 @@ function handleFormSubmit(e) {
       removeAttachment();
 
       // Reset Cloudflare Turnstile sau khi gửi thành công
-      if (window.turnstile) {
-        try { turnstile.reset(); } catch (err) {}
+      if (window.HgsCaptcha) {
+        HgsCaptcha.reset(document.getElementById('requestForm'));
       }
 
       loadMyRequests();
